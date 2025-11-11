@@ -1,0 +1,13 @@
+server:
+  port: 8000
+  host: "localhost"
+  logs: "/var/log/full-stack/logs.log"
+  admin-username: "admin"
+  admin-password: "admin"
+
+database:
+  user: "postgres"
+  password: "postgres"
+  name: "postgres"
+  port: 5432
+  sslmode: "disable"

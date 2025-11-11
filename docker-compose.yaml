@@ -1,0 +1,44 @@
+services:
+  # porject:
+  #   build: .
+  #   container_name: full-stack-web
+  #   restart: unless-stopped
+  #   ports:
+  #     - "8000:80"
+  #   environment:
+  #     - SSL_MODE=disable
+  #     - DB_PORT=5432
+  #     - DB_HOST=localhost
+  #     - DB_NAME_WEB=postgres
+  #     - DB_USER=postgres
+  #     - DB_PASS=postgres
+  #   volumes:
+  #     - shared_volume:/var/log/full-stack
+  #   networks:
+  #     - full-stack-net
+
+  postgres:
+    image: postgres:17
+    container_name: full-stack-db
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+  
+volumes:
+  shared_volume:
+  pgdata:
+
+networks:
+  full-stack-net:
+    # external: true
