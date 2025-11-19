@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/golang-jwt/jwt/v4"
+	"github.com/golang-jwt/jwt/v5"
 )
 
 func CheckAuth(c *gin.Context) {
@@ -48,7 +48,7 @@ func CheckAuth(c *gin.Context) {
 		c.AbortWithStatus(http.StatusUnauthorized)
 		return
 	}
-	
+
 	if float64(time.Now().Unix()) > claims["exp"].(float64) {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "token expired"})
 		c.AbortWithStatus(http.StatusUnauthorized)

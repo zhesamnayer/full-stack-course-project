@@ -21,14 +21,17 @@ type Repository interface {
 	AddUser(ctx context.Context, username, password, email, role string) error
 	UpdateUser(ctx context.Context, id uint, name, email, role string) error
 	DeleteUser(ctx context.Context, id uint) error
+	GetUserInfo(ctx context.Context, username string) (*domain.User, error)
 
 	ListIncomes(ctx context.Context) ([]*domain.Income, error)
 	AddIncome(ctx context.Context, amount float64, descrition, category string) error
 	UpdateIncome(ctx context.Context, id uint, amount float64, descrition, category string) error
 	DeleteIncome(ctx context.Context, id uint) error
+	ReportIncomes(ctx context.Context, from, to string) ([]*domain.Income, error)
 
 	ListExpenses(ctx context.Context) ([]*domain.Expense, error)
 	AddExpense(ctx context.Context, amount float64, descrition, category string) error
 	UpdateExpense(ctx context.Context, id uint, amount float64, descrition, category string) error
 	DeleteExpense(ctx context.Context, id uint) error
+	ReportExpenses(ctx context.Context, from, to string) ([]*domain.Expense, error)
 }

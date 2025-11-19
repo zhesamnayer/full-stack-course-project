@@ -2,14 +2,21 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"full-stack-project/api"
 	"full-stack-project/memory"
 	"full-stack-project/pgsql"
 	"full-stack-project/repo"
+	"github.com/joho/godotenv"
 	"log"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+)
+
+const (
+	EnvFilePath = "infra/.env"
+	DefaultDB   = "postgres"
 )
 
 var (
@@ -18,9 +25,14 @@ var (
 )
 
 func init() {
-	flag.StringVar(&repoFlag, "d", "mem", "Which db?")
+	flag.StringVar(&repoFlag, "d", DefaultDB, "Which db?")
 	flag.Parse()
 	options = GetOptions()
+
+	err := godotenv.Load(EnvFilePath)
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
 }
 
 func main() {
@@ -34,13 +46,16 @@ func main() {
 
 		dbrepo = repo.NewDBResository(memrepo)
 	} else {
-		dsn := "host=" + options.Server.Host + " " +
-			"user=" + options.Database.User + " " +
-			"password=" + options.Database.Password + " " +
-			"dbname=" + options.Database.Name + " " +
-			"port=" + strconv.Itoa(options.Database.Port) + " " +
-			"sslmode=" + options.Database.SSLMode + " TimeZone=Europe/Helsinki"
-		// log.Println(dsn)
+		dsn := fmt.Sprintf(
+			"host=%s user=%s password=%s dbname=%s port=%d sslmode=%s TimeZone=Europe/Helsinki",
+			options.Server.Host,
+			options.Database.User,
+			options.Database.Password,
+			options.Database.Name,
+			options.Database.Port,
+			options.Database.SSLMode,
+		)
+
 		pgsqlRepo, err := pgsql.NewPgsqlRepo(dsn)
 		if err != nil {
 			log.Fatalf("Error in connecting to postgres: %s", err)
@@ -71,10 +86,11 @@ func main() {
 	router.DELETE("/api/v1/expenses/delete", h.DeleteExpense)
 	router.GET("/api/v1/expenses/list", h.Expenses)
 
-	// router.GET("/api/v1/incomes/report", h.ReportIncome)
-	// router.GET("/api/v1/expense/report", h.ReportExpense)
-	// router.GET("/api/v1/incomes/export", h.ExportIncome)
-	// router.GET("/api/v1/expense/export", h.ExportExpense)
+	router.GET("/api/v1/incomes/report", h.ReportIncomes)
+	router.GET("/api/v1/expenses/report", h.ReportExpenses)
+
+	router.GET("/api/v1/incomes/export", h.ExportIncomes)
+	router.GET("/api/v1/expenses/export", h.ExportExpenses)
 
 	// Start server
 	strport := strconv.Itoa(options.Server.Port)

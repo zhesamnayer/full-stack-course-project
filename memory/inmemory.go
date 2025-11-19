@@ -45,10 +45,10 @@ func (r *MemoryRepo) AddUser(ctx context.Context, name, password, email, role st
 	user := domain.User{}
 
 	user.ID = 1
-	user.UserName = name
+	user.Username = name
 	user.Password = password
 	user.Email = email
-	user.RoleName = role
+	user.Role = role
 
 	r.users[user.ID] = &user
 	return nil
@@ -60,7 +60,7 @@ func (r *MemoryRepo) UpdateUser(ctx context.Context, id uint, name, email, role 
 	}
 
 	user := r.users[id]
-	user.UserName = name
+	user.Username = name
 	user.Email = email
 	// user.Role = role
 	r.users[id] = user
@@ -131,4 +131,21 @@ func (r *MemoryRepo) DeleteExpense(ctx context.Context, id uint) error {
 
 func (r *MemoryRepo) CheckUserCredentials(ctx context.Context, username, password string) error {
 	return nil
+}
+
+func (r *MemoryRepo) ReportIncomes(ctx context.Context, from, to string) ([]*domain.Income, error) {
+	return slices.Collect(maps.Values(r.incomes)), nil
+}
+
+func (r *MemoryRepo) ReportExpenses(ctx context.Context, from, to string) ([]*domain.Expense, error) {
+	return slices.Collect(maps.Values(r.expenses)), nil
+}
+
+func (r *MemoryRepo) GetUserInfo(ctx context.Context, username string) (*domain.User, error) {
+	for i, u := range r.users {
+		if u.Username == username {
+			return r.users[i], nil
+		}
+	}
+	return nil, errors.New(shared.ErrNotFoundUser)
 }

@@ -36,7 +36,7 @@ services:
       retries: 5
   
 volumes:
-  shared_volume:
+#  shared_volume:
   pgdata:
 
 networks:

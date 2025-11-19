@@ -1,29 +1,25 @@
 package domain
 
-import (
-	"github.com/jinzhu/gorm"
-)
-
 type User struct {
-	gorm.Model
-
-	UserName string `json:"user_name" gorm:"unique"`
-	RoleName string `json:"role_name"`
-	Password string `json:"password"`
-	Email    string `json:"email"`
+	ID        uint   `gorm:"primary_key"`
+	CreatedAt uint64 `json:"created_at"`
+	Username  string `json:"username" gorm:"unique"`
+	Password  string `json:"password"`
+	Email     string `json:"email"`
+	Role      string `json:"role"`
 }
 
 type Income struct {
-	gorm.Model
-
+	ID          uint    `gorm:"primary_key"`
+	CreatedAt   uint64  `json:"created_at"`
 	Amount      float64 `json:"amount"`
 	Description string  `json:"description"`
 	Category    string  `json:"category"`
 }
 
 type Expense struct {
-	gorm.Model
-
+	ID          uint    `gorm:"primary_key"`
+	CreatedAt   uint64  `json:"created_at"`
 	Amount      float64 `json:"amount"`
 	Description string  `json:"description"`
 	Category    string  `json:"category"`

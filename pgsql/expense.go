@@ -43,26 +43,23 @@ func (r *PqsqlRepo) UpdateExpense(ctx context.Context, id uint, amount float64, 
 	if err != nil {
 		return err
 	}
-
-	// -------------
-	// err := r.conn.Model(domain.Expense{}).
-	// 	Where("id = ?", id).
-	// 	Update("amount", amount).
-	// 	Update("description", descrition).
-	// 	Update("category", category).Error
-	// if err != nil {
-	// 	return err
-	// }
-
-	//----------------
-
 	return nil
 }
 
 func (r *PqsqlRepo) DeleteExpense(ctx context.Context, id uint) error {
-	err := r.conn.Delete(domain.Expense{}).Where("ID  = ?", id).Error
+	err := r.conn.Delete(domain.Expense{}, "ID  = ?", id).Error
 	if err != nil {
 		return err
 	}
 	return nil
+}
+
+func (r *PqsqlRepo) ReportExpenses(ctx context.Context, from, to string) ([]*domain.Expense, error) {
+	var expenses []*domain.Expense
+	err := r.conn.Model(domain.Expense{}).Where("created_at >= ? and created_at <= ?", from, to).Find(&expenses).Error
+	if err != nil {
+		return nil, err
+	}
+
+	return expenses, nil
 }

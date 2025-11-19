@@ -48,9 +48,20 @@ func (r *PqsqlRepo) UpdateIncome(ctx context.Context, id uint, amount float64, d
 }
 
 func (r *PqsqlRepo) DeleteIncome(ctx context.Context, id uint) error {
-	err := r.conn.Delete(domain.Income{}).Where("ID  = ?", id).Error
+	err := r.conn.Delete(domain.Income{}, "ID  = ?", id).Error
 	if err != nil {
 		return err
 	}
 	return nil
+}
+
+func (r *PqsqlRepo) ReportIncomes(ctx context.Context, from, to string) ([]*domain.Income, error) {
+	var incomes []*domain.Income
+
+	err := r.conn.Model(domain.Income{}).Where("created_at >= ? and created_at <= ?", from, to).Find(&incomes).Error
+	if err != nil {
+		return nil, err
+	}
+
+	return incomes, nil
 }
