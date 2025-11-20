@@ -10,10 +10,10 @@ import (
 // Config maps the structure of config.yaml
 type Config struct {
 	Server struct {
-		Port           int    `yaml:"port"`
-		Host           string `yaml:"host"`
-		admin_username string `yaml:"admin-username"`
-		admin_password string `yaml:"admin-password"`
+		Port          int    `yaml:"port"`
+		Host          string `yaml:"host"`
+		Tls_Cert_Path string `yaml:"tls-cert-path"`
+		Tls_Key_Path  string `yaml:"tls-key-path"`
 	} `yaml:"server"`
 
 	Database struct {

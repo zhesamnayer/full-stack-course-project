@@ -1,9 +1,9 @@
 server:
-  port: 8000
+  port: 443
   host: "localhost"
   logs: "/var/log/full-stack/logs.log"
-  admin-username: "admin"
-  admin-password: "admin"
+  tls-cert-path: "certs/cert.pem"
+  tls-key-path: "certs/key.pem"
 
 database:
   user: "postgres"

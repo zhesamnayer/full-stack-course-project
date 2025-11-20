@@ -94,5 +94,8 @@ func main() {
 
 	// Start server
 	strport := strconv.Itoa(options.Server.Port)
-	router.Run(":" + strport)
+	err := router.RunTLS(":"+strport, options.Server.Tls_Cert_Path, options.Server.Tls_Key_Path)
+	if err != nil {
+		log.Printf("Error in starting http server: %s", err)
+	}
 }
