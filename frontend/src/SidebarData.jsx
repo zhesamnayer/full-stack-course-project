@@ -2,8 +2,8 @@ import HomeIcon from '@mui/icons-material/Home';
 import EuroIcon from '@mui/icons-material/Euro';
 import ShopIcon from '@mui/icons-material/Shop';
 import LogoutIcon from '@mui/icons-material/Logout';
-
-import SettingsApplicationsIcon from '@mui/icons-material/SettingsApplications';
+import GroupIcon from '@mui/icons-material/Group';
+import AssessmentIcon from '@mui/icons-material/Assessment';
 
 export const SidebarData = [
     {
@@ -23,18 +23,13 @@ export const SidebarData = [
     },
     {
         title: "Report",
-        icon: <SettingsApplicationsIcon />,
+        icon: <AssessmentIcon />,
         link: "/report"
     },
     {
-        title: "Export",
-        icon: <SettingsApplicationsIcon />,
-        link: "/export"
-    },
-    {
-        title: "Settings",
-        icon: <SettingsApplicationsIcon />,
-        link: "/settings"
+        title: "Users",
+        icon: <GroupIcon />,
+        link: "/users"
     },
     {
         title: "Logout",

@@ -1,5 +1,6 @@
 import PieChartExpenses from "./DonutchartExpenses";
 import PieChartIncomes from "./DonutchartIncomes";
+import PieChartSummary from "./DonutchartSummary";
 import Typography from "@mui/material/Typography";
 
 export default function Dashboard() {
@@ -25,6 +26,17 @@ export default function Dashboard() {
                   sx={{ mt: 1, color: "text.secondary" }}
                 >
                   Incomes Summary
+                </Typography>
+            </div>
+
+            <div style={{padding:"50px"}}>
+              <PieChartSummary />
+                <Typography
+                  variant="body2"
+                  align="center"
+                  sx={{ mt: 1, color: "text.secondary" }}
+                >
+                  Summary
                 </Typography>
             </div>
             

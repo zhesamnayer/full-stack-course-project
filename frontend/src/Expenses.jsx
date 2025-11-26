@@ -37,10 +37,10 @@ export default function Expenses() {
   };
 
   const columns = [
-  { field: "id", headerName: "ID", width: 30 },
-  { field: "amount", headerName: "Amount", width: 100, editable: true, type: "number" },
-  { field: "description", headerName: "Description", width: 200, editable: true },
-  { field: "category", headerName: "Category", width: 140, editable: true },
+    { field: "displayId", headerName: "ID", width: 70, align: "left", headerAlign: "left" },
+    { field: "amount", headerName: "Amount", width: 100, editable: true, type: "number", align: "left", headerAlign: "left" },
+    { field: "description", headerName: "Description", width: 300, editable: true, align: "left", headerAlign: "left" },
+    { field: "category", headerName: "Category", width: 140, editable: true, align: "left", headerAlign: "left" },
       // Management column
   {
     field: "actions",
@@ -78,14 +78,22 @@ export default function Expenses() {
         }
       });
 
-      if (!res.ok) throw new Error("Failed to fetch users");
+      if (!res.ok) throw new Error("Failed to fetch expenses");
 
       const fullData = await res.json();
       const data = fullData.ok || []; // make sure it's an array
 
-      setRows(data); // DataGrid expects rows with unique `id`
+      // setRows(data); // DataGrid expects rows with unique `id`
+
+      const processed = data.map((row, index) => ({
+      ...row,
+      displayId: index + 1,
+    }));
+
+    setRows(processed);
+
     } catch (err) {
-      setError(err.message || "Error loading users");
+      setError(err.message || "Error loading expenses");
     } finally {
       setLoading(false);
     }
@@ -202,14 +210,15 @@ export default function Expenses() {
   return (
     <div style={{ height: 600, width: "100%" }}>
 
-      {/* ADD BUTTON */}
-      <Button variant="contained" onClick={handleOpen}>
-        Add New Expense
-      </Button>
+      <div style={{ padding:"20px", width:"200px"}}>
+        <Button variant="contained" onClick={handleOpen}>
+          Add New Expense
+        </Button>
+      </div>
 
       {/* POPUP FORM */}
       <Dialog open={open} onClose={handleClose}>
-        <DialogTitle>Add User</DialogTitle>
+        <DialogTitle>Add a new expense record</DialogTitle>
         <DialogContent sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
           <TextField
             label="Amount"
@@ -244,13 +253,16 @@ export default function Expenses() {
       </Dialog>
 
 
-      <DataGrid
-        rows={rows}
-        columns={columns}
-        loading={loading}
-        sortModel={[{ field: 'id', sort: 'asc' }]} // initial sort
-        pageSizeOptions={[10, 25, 50]}
-      />
+    <div style={{ width:"1000px", padding:"20px"}}>
+          <DataGrid
+            rows={rows}
+            columns={columns}
+            loading={loading}
+            sortModel={[{ field: 'id', sort: 'asc' }]} // initial sort
+            pageSizeOptions={[10, 25, 50]}
+            showToolbar
+          />
+    </div>
 
             {/* Snackbar Notification */}
       <Snackbar

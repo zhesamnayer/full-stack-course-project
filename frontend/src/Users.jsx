@@ -10,7 +10,7 @@ import {
   TextField,
 } from "@mui/material";
 
-export default function Incomes() {
+export default function Users() {
   const baseUrl = sessionStorage.getItem("baseUrl");
   const token = sessionStorage.getItem("token");
 
@@ -19,9 +19,10 @@ export default function Incomes() {
 
   const [open, setOpen] = useState(false);
   const [formData, setFormData] = useState({
-    amount: "",
-    description: "",
-    category: "",
+    username: "",
+    password: "",
+    email: "",
+    role:"",
   });
 
   const [snackbarMessage, setSnackbarMessage] = useState("");
@@ -38,9 +39,9 @@ export default function Incomes() {
 
   const columns = [
     { field: "displayId", headerName: "ID", width: 70, align: "left", headerAlign: "left" },
-    { field: "amount", headerName: "Amount", width: 100, editable: true, type: "number", align: "left", headerAlign: "left" },
-    { field: "description", headerName: "Description", width: 300, editable: true, align: "left", headerAlign: "left" },
-    { field: "category", headerName: "Category", width: 140, editable: true, align: "left", headerAlign: "left" },
+    { field: "username", headerName: "Username", width: 100, editable: true, align: "left", headerAlign: "left" },
+    { field: "email", headerName: "Email", width: 300, editable: true, align: "left", headerAlign: "left" },
+    { field: "role", headerName: "Role", width: 140, editable: true, align: "left", headerAlign: "left" },
   {
     field: "actions",
     headerName: "Actions",
@@ -67,17 +68,17 @@ export default function Incomes() {
     },
   ];
 
-  const fetchIncomes = async () => {
+  const fetchUsers = async () => {
     try {
       setLoading(true);
 
-      const res = await fetch(`${baseUrl}/api/v1/incomes/list`, {
+      const res = await fetch(`${baseUrl}/api/v1/users/list`, {
         headers: {
           "Authorization": `Bearer ${token}`
         }
       });
 
-      if (!res.ok) throw new Error("Failed to fetch incomes");
+      if (!res.ok) throw new Error("Failed to fetch users");
 
       const fullData = await res.json();
       const data = fullData.ok || []; // make sure it's an array
@@ -91,7 +92,7 @@ export default function Incomes() {
     setRows(processed);
 
     } catch (err) {
-      setError(err.message || "Error loading incomes");
+      setError(err.message || "Error loading users");
     } finally {
       setLoading(false);
     }
@@ -99,14 +100,15 @@ export default function Incomes() {
 
   const handleInsert = async() => {
     const newRecord = {
-      amount: Number(formData.amount),
-      description: formData.description,
-      category: formData.category,
+      username: formData.username,
+      password: formData.password,
+      role: formData.role,
+      email: formData.email,  
     };
       try {
       // const payload = { ...row, amount: parseInt(row.amount, 10) };
 
-      const res = await fetch(`${baseUrl}/api/v1/incomes/add`, {
+      const res = await fetch(`${baseUrl}/api/v1/users/add`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -126,7 +128,7 @@ export default function Incomes() {
       setShowToast(true);
 
       // Refresh rows
-      fetchIncomes();
+      fetchUsers();
 
       // Close popup and reset
       setFormData({ amount: "", description: "", category: "" });
@@ -141,7 +143,7 @@ export default function Incomes() {
   const handleDelete = async(id) => {
       try {
    
-      const res = await fetch(`${baseUrl}/api/v1/incomes/delete?id=${id}`, {
+      const res = await fetch(`${baseUrl}/api/v1/users/delete?id=${id}`, {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
@@ -161,7 +163,7 @@ export default function Incomes() {
       setShowToast(true);
 
       // Refresh rows
-      fetchIncomes();
+      fetchUsers();
       
     } catch (err) {
       setSnackbarMessage(err.messaage);
@@ -171,15 +173,13 @@ export default function Incomes() {
 
   const handleUpdate = async(row) => {
       try {
-      const payload = { ...row, amount: parseInt(row.amount, 10) };
-
-      const res = await fetch(`${baseUrl}/api/v1/incomes/update`, {
+      const res = await fetch(`${baseUrl}/api/v1/users/update`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(payload), // Send entire row info
+        body: JSON.stringify(row), // Send entire row info
       });
 
       const data = await res.json();
@@ -193,7 +193,7 @@ export default function Incomes() {
       setShowToast(true);
 
       // Refresh rows
-      fetchIncomes();
+      fetchUsers();
       
     } catch (err) {
       setSnackbarMessage(err.messaage);
@@ -202,7 +202,7 @@ export default function Incomes() {
   };
 
   useEffect(() => {
-    fetchIncomes();
+    fetchUsers();
   }, []);
 
   return (
@@ -210,33 +210,39 @@ export default function Incomes() {
 
       <div style={{ padding:"20px", width:"200px"}}>
         <Button variant="contained" onClick={handleOpen}>
-          Add New Income
+          Add a New User
         </Button>
       </div>
 
       {/* POPUP FORM */}
       <Dialog open={open} onClose={handleClose}>
-        <DialogTitle>Add a new income record</DialogTitle>
+        <DialogTitle>Add a new user</DialogTitle>
         <DialogContent sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
           <TextField
-            label="Amount"
-            name="amount"
-            type="number"
-            value={formData.amount}
+            label="Username"
+            name="username"
+            value={formData.username}
+            onChange={handleChange}
+            fullWidth
+          />
+            <TextField
+            label="Password"
+            name="password"
+            value={formData.password}
             onChange={handleChange}
             fullWidth
           />
           <TextField
-            label="Description"
-            name="description"
-            value={formData.description}
+            label="Email"
+            name="email"
+            value={formData.email}
             onChange={handleChange}
             fullWidth
           />
           <TextField
-            label="Category"
-            name="category"
-            value={formData.category}
+            label="Role"
+            name="role"
+            value={formData.role}
             onChange={handleChange}
             fullWidth
           />

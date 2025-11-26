@@ -56,11 +56,11 @@ export default function PieChartIncomes() {
           data: chartData,
           highlightScope: { fade: 'global', highlight: 'item' },
           faded: { innerRadius: 30, additionalRadius: -30, color: 'gray' },
-          // valueFormatter,
+          valueFormatter: (item) => `${item.value} €`,
         },
         ]}
-        height={400}
-        width={400}
+        height={300}
+        width={300}
       />
     </div>
   );

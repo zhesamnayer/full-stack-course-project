@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import { PieChart } from '@mui/x-charts/PieChart';
 
-export default function PieChartExpenses() {
+export const valueFormatter = (item) => `${item.value}%`;
+
+export default function PieChartSummary() {
   const [chartData, setChartData] = useState([]);
   const baseUrl = sessionStorage.getItem("baseUrl");
   const token = sessionStorage.getItem("token");
@@ -23,7 +25,7 @@ export default function PieChartExpenses() {
     const from = Math.floor(lastMonthDate.getTime() / 1000);
 
     try {
-      const res = await fetch(`${baseUrl}/api/v1/expenses/summary?from=${from}&to=${to}`, {
+      const res = await fetch(`${baseUrl}/api/v1/summary?from=${from}&to=${to}`, {
         headers: {
           "Authorization": `Bearer ${token}`
         }
@@ -38,6 +40,7 @@ export default function PieChartExpenses() {
         label: item.category,
         value: item.amount
       }));
+
 
       setChartData(formatted);
 
@@ -62,4 +65,5 @@ export default function PieChartExpenses() {
       />
     </div>
   );
+
 }

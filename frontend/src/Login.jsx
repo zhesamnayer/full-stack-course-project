@@ -10,13 +10,12 @@ const Login = () => {
   const protocol = location.protocol;
 
   // Save host in session storage
-  baseUrl = `${protocol}//${host}`;
+  const baseUrl = `${protocol}//${host}`;
 
-  // in development only
-  var baseUrl = "http://192.168.10.38"
+  // in development only, comment it while build project
+  // var baseUrl = "https://192.168.10.38"
 
   sessionStorage.setItem("baseUrl", baseUrl);
-
 
   const handleSubmit = async (e) => {
     e.preventDefault();

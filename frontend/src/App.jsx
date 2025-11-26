@@ -7,7 +7,8 @@ import Incomes from "./Incomes";
 import Expenses from "./Expenses";
 import Login from './Login';
 import Logout from './Logout';
-
+import Report from './Report';
+import Users from './Users';
 
 function App() {
 
@@ -28,6 +29,8 @@ function App() {
         <Route path="/expenses" element={<Expenses />} />
         <Route path="/login" element={<Login />} />
         <Route path="/logout" element={<Logout />} />
+        <Route path="/report" element={<Report />} />
+        <Route path="/users" element={<Users />} />
       </Routes>
       </div>
     </div>
