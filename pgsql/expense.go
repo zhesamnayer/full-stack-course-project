@@ -34,6 +34,7 @@ func (r *PqsqlRepo) UpdateExpense(ctx context.Context, id uint, amount float64, 
 	r.conn.Find(&expense).Where("ID = ?", id)
 
 	// Update the expense information
+	expense.ID = id
 	expense.Amount = amount
 	expense.Description = descrition
 	expense.Category = category
@@ -56,10 +57,25 @@ func (r *PqsqlRepo) DeleteExpense(ctx context.Context, id uint) error {
 
 func (r *PqsqlRepo) ReportExpenses(ctx context.Context, from, to string) ([]*domain.Expense, error) {
 	var expenses []*domain.Expense
+
 	err := r.conn.Model(domain.Expense{}).Where("created_at >= ? and created_at <= ?", from, to).Find(&expenses).Error
 	if err != nil {
 		return nil, err
 	}
 
 	return expenses, nil
+}
+
+func (r *PqsqlRepo) ExpensesSummary(ctx context.Context) ([]*domain.ExpenseSummary, error) {
+	var summary []*domain.ExpenseSummary
+
+	err := r.conn.Model(domain.Expense{}).
+		Select("category, sum(amount) as amount").
+		Group("category").
+		Scan(&summary).Error
+	if err != nil {
+		return nil, err
+	}
+
+	return summary, nil
 }

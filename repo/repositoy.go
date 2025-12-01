@@ -34,4 +34,9 @@ type Repository interface {
 	UpdateExpense(ctx context.Context, id uint, amount float64, descrition, category string) error
 	DeleteExpense(ctx context.Context, id uint) error
 	ReportExpenses(ctx context.Context, from, to string) ([]*domain.Expense, error)
+
+	IncomesSummary(ctx context.Context) ([]*domain.IncomeSummary, error)
+	ExpensesSummary(ctx context.Context) ([]*domain.ExpenseSummary, error)
+
+	OverallSummary(ctx context.Context, from, to string) ([]*domain.IncomeSummary, error)
 }

@@ -34,6 +34,7 @@ func (r *PqsqlRepo) UpdateIncome(ctx context.Context, id uint, amount float64, d
 	r.conn.Find(&income).Where("ID = ", id)
 
 	// Update the income information
+	income.ID = id
 	income.Amount = amount
 	income.Description = description
 	income.Category = category
@@ -64,4 +65,18 @@ func (r *PqsqlRepo) ReportIncomes(ctx context.Context, from, to string) ([]*doma
 	}
 
 	return incomes, nil
+}
+
+func (r *PqsqlRepo) IncomesSummary(ctx context.Context) ([]*domain.IncomeSummary, error) {
+	var summary []*domain.IncomeSummary
+
+	err := r.conn.Model(domain.Income{}).
+		Select("category, sum(amount) as amount").
+		Group("category").
+		Scan(&summary).Error
+	if err != nil {
+		return nil, err
+	}
+
+	return summary, nil
 }

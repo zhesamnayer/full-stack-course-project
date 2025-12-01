@@ -12,7 +12,7 @@ import (
 )
 
 func CheckAuth(c *gin.Context) {
-
+	//extracting token from Authorization request header
 	authHeader := c.GetHeader("Authorization")
 
 	if authHeader == "" {
@@ -36,19 +36,20 @@ func CheckAuth(c *gin.Context) {
 		return []byte(os.Getenv("SECRET")), nil
 	})
 
+	// verify the token validity
 	if err != nil || !token.Valid {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid or expired token"})
 		c.AbortWithStatus(http.StatusUnauthorized)
 		return
 	}
-
+	// Extracting claims section from token to be checked later
 	claims, ok := token.Claims.(jwt.MapClaims)
 	if !ok {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token"})
 		c.AbortWithStatus(http.StatusUnauthorized)
 		return
 	}
-
+	// Check if the token is not expired yet
 	if float64(time.Now().Unix()) > claims["exp"].(float64) {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "token expired"})
 		c.AbortWithStatus(http.StatusUnauthorized)
@@ -59,19 +60,19 @@ func CheckAuth(c *gin.Context) {
 	c.Next()
 }
 
-func CheckIfTokenExpired(tokenString string) bool {
-	token, _ := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
-		}
-		return []byte(os.Getenv("SECRET")), nil
-	})
-
-	claims, _ := token.Claims.(jwt.MapClaims)
-
-	// A token can be used forever. need to be fixed
-	if float64(time.Now().Unix()) > claims["exp"].(float64) {
-		return true
-	}
-	return false
-}
+//func CheckIfTokenExpired(tokenString string) bool {
+//	token, _ := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+//		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+//			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+//		}
+//		return []byte(os.Getenv("SECRET")), nil
+//	})
+//
+//	claims, _ := token.Claims.(jwt.MapClaims)
+//
+//	// A token can be used forever. need to be fixed
+//	if float64(time.Now().Unix()) > claims["exp"].(float64) {
+//		return true
+//	}
+//	return false
+//}

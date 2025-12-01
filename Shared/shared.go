@@ -22,6 +22,7 @@ var (
 	ErrListingExpenses   = "expenses cannot be listed"
 	ErrJWTTokenGenFailed = "JWT token generation failed"
 	ErrWrongRole         = "Role not found"
+	ErrInternalError     = "Internal Error"
 	OkKeyword            = "ok"
 	OkAddingUser         = "user added successfully"
 	OkUpdatingUser       = "user updated successfully"
@@ -38,6 +39,7 @@ var (
 
 var Roles = []string{"admin", "user"}
 
+// UnixTimeToRFC339 used to convert time from unixtime to RFC3339 - like 2006-01-02T15:04:05Z07:00
 func UnixTimeToRFC339(t uint64) string {
 	return time.Unix(int64(t), 0).Format(time.RFC3339)
 }

@@ -91,11 +91,11 @@ func (h *Handler) Expenses(c *gin.Context) {
 }
 
 func (h *Handler) ReportExpenses(c *gin.Context) {
-	from := c.Query("from")
-	to := c.Query("to")
-
 	ctx, cancel := context.WithTimeout(c, 100*time.Millisecond)
 	defer cancel()
+
+	from := c.Query("from")
+	to := c.Query("to")
 
 	expenses, err := h.repo.Repo.ReportExpenses(ctx, from, to)
 	if err != nil {
@@ -121,11 +121,11 @@ func (h *Handler) ReportExpenses(c *gin.Context) {
 }
 
 func (h *Handler) ExportExpenses(c *gin.Context) {
-	from := c.Query("from")
-	to := c.Query("to")
-
 	ctx, cancel := context.WithTimeout(c, 100*time.Millisecond)
 	defer cancel()
+
+	from := c.Query("from")
+	to := c.Query("to")
 
 	expenses, err := h.repo.Repo.ReportExpenses(ctx, from, to)
 	if err != nil {
@@ -171,4 +171,16 @@ func (h *Handler) ExportExpenses(c *gin.Context) {
 	c.Header("Content-Description", "File Transfer")
 	c.Header("Content-Disposition", "attachment; filename=expenses.csv")
 	c.Data(http.StatusOK, "text/csv", buf.Bytes())
+}
+
+func (h *Handler) ExpenseSummary(c *gin.Context) {
+	ctx, cancel := context.WithTimeout(c, 5*time.Second)
+	defer cancel()
+
+	res, err := h.repo.Repo.ExpensesSummary(ctx)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{shared.ErrKeyword: shared.ErrInternalError})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{shared.OkKeyword: res})
 }

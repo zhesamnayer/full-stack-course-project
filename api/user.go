@@ -119,10 +119,10 @@ func (h *Handler) UpdateUser(c *gin.Context) {
 	defer cancel()
 
 	var user struct {
-		ID    uint
-		Name  string
-		Email string
-		Role  string
+		ID       uint   `json:"id"`
+		Username string `json:"username"`
+		Email    string `json:"email"`
+		Role     string `json:"role"`
 	}
 
 	err := c.ShouldBind(&user)
@@ -131,7 +131,7 @@ func (h *Handler) UpdateUser(c *gin.Context) {
 		return
 	}
 
-	err = h.repo.Repo.UpdateUser(ctx, user.ID, user.Name, user.Email, user.Role)
+	err = h.repo.Repo.UpdateUser(ctx, user.ID, user.Username, user.Email, user.Role)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{shared.ErrKeyword: shared.ErrUpdatingUser})
 		return

@@ -171,3 +171,15 @@ func (h *Handler) ExportIncomes(c *gin.Context) {
 	c.Header("Content-Disposition", "attachment; filename=incomes.csv")
 	c.Data(http.StatusOK, "text/csv", buf.Bytes())
 }
+
+func (h *Handler) IncomeSummary(c *gin.Context) {
+	ctx, cancel := context.WithTimeout(c, 5*time.Second)
+	defer cancel()
+
+	res, err := h.repo.Repo.IncomesSummary(ctx)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{shared.ErrKeyword: shared.ErrInternalError})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{shared.OkKeyword: res})
+}

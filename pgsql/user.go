@@ -38,6 +38,7 @@ func (r *PqsqlRepo) UpdateUser(ctx context.Context, id uint, name, email, role s
 	r.conn.Find(&user).Where("ID = ", id)
 
 	// Update the user information
+	user.ID = id
 	user.Username = name
 	user.Email = email
 	user.Role = role

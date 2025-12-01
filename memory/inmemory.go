@@ -149,3 +149,15 @@ func (r *MemoryRepo) GetUserInfo(ctx context.Context, username string) (*domain.
 	}
 	return nil, errors.New(shared.ErrNotFoundUser)
 }
+
+func (r *MemoryRepo) IncomesSummary(ctx context.Context) ([]*domain.IncomeSummary, error) {
+	return nil, nil
+}
+
+func (r *MemoryRepo) ExpensesSummary(ctx context.Context) ([]*domain.ExpenseSummary, error) {
+	return nil, nil
+}
+
+func (r *MemoryRepo) OverallSummary(ctx context.Context, from, to string) ([]*domain.IncomeSummary, error) {
+	return nil, nil
+}
