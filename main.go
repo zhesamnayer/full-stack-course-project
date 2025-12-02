@@ -37,6 +37,7 @@ func init() {
 	if err != nil {
 		log.Fatal("Error loading .env file")
 	}
+
 }
 
 func main() {
@@ -70,6 +71,8 @@ func main() {
 
 	h := api.NewHandler(dbrepo)
 
+	initDB(h)
+
 	router := gin.Default()
 	router.Use(corsMiddleware())
 
@@ -82,14 +85,23 @@ func main() {
 	router.StaticFile("/report", "./dist/index.html")
 	router.StaticFile("/login", "./dist/index.html")
 	router.StaticFile("/logout", "./dist/index.html")
+	router.StaticFile("/signup", "./dist/index.html")
+	router.StaticFile("/back-login.avif", "./dist/back-login.avif")
+	router.StaticFile("/back.png", "./dist/back.png")
+	router.StaticFile("/money.ico", "./dist/money.ico")
+	router.StaticFile("/userinfo", "./dist/index.html")
 
+	router.POST("/api/v1/signup", h.Signup)
 	router.POST("/api/v1/login", h.Login)
 	router.GET("/api/v1/logout", api.CheckAuth, h.Logout)
+	router.POST("/api/v1/change_password", api.CheckAuth, h.ChangePassword)
+	router.GET("/api/v1/userinfo", api.CheckAuth, h.UserInfo)
 
-	router.GET("/api/v1/users/list", api.CheckAuth, h.ListUsers)
-	router.POST("/api/v1/users/add", api.CheckAuth, h.AddUser)
-	router.POST("/api/v1/users/update", api.CheckAuth, h.UpdateUser)
-	router.DELETE("/api/v1/users/delete", api.CheckAuth, h.DeleteUser)
+	router.GET("/api/v1/users/list", api.CheckAuth, api.IsAdmin, h.ListUsers)
+	router.POST("/api/v1/users/add", api.CheckAuth, api.IsAdmin, h.AddNewUser)
+	router.POST("/api/v1/users/update", api.CheckAuth, api.IsAdmin, h.UpdateUser)
+	router.DELETE("/api/v1/users/delete", api.CheckAuth, api.IsAdmin, h.DeleteUser)
+	router.POST("/api/v1/users/change_password", api.CheckAuth, api.IsAdmin, h.ChangePasswordByAdmin)
 
 	router.POST("/api/v1/incomes/add", api.CheckAuth, h.AddIncome)
 	router.POST("/api/v1/incomes/update", api.CheckAuth, h.UpdateIncome)
@@ -114,12 +126,6 @@ func main() {
 
 	// Start server
 	strport := strconv.Itoa(options.Server.Port)
-
-	//err := router.Run(":80")
-	//if err != nil {
-	//	log.Printf("Error in starting http server: %s", err)
-	//}
-
 	err := router.RunTLS(":"+strport, options.Server.Tls_Cert_Path, options.Server.Tls_Key_Path)
 	if err != nil {
 		log.Printf("Error in starting http server: %s", err)
@@ -129,7 +135,7 @@ func main() {
 // CORS middleware function definition
 func corsMiddleware() gin.HandlerFunc {
 	// Define allowed origins as a comma-separated string
-	originsString := "http://localhost:5173,http://localhost:3000,https://localhost:5173,https://localhost:3000"
+	originsString := "http://localhost:5173,http://localhost:5174,http://localhost:3000,https://localhost:5173,https://localhost:3000"
 	var allowedOrigins []string
 	if originsString != "" {
 		// Split the originsString into individual origins and store them in allowedOrigins slice

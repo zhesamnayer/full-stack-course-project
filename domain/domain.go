@@ -7,6 +7,10 @@ type User struct {
 	Password  string `json:"password"`
 	Email     string `json:"email"`
 	Role      string `json:"role"`
+
+	// Relation: one user has many incomes
+	Incomes  []Income  `gorm:"constraint:OnDelete:CASCADE,OnUpdate:CASCADE;" json:"incomes"`
+	Expenses []Expense `gorm:"constraint:OnDelete:CASCADE,OnUpdate:CASCADE;" json:"expenses"`
 }
 
 type Income struct {
@@ -15,6 +19,9 @@ type Income struct {
 	Amount      float64 `json:"amount"`
 	Description string  `json:"description"`
 	Category    string  `json:"category"`
+
+	// Foreign key to User
+	UserID uint `json:"user_id"`
 }
 
 type Expense struct {
@@ -23,6 +30,9 @@ type Expense struct {
 	Amount      float64 `json:"amount"`
 	Description string  `json:"description"`
 	Category    string  `json:"category"`
+
+	// Foreign key to User
+	UserID uint `json:"user_id"`
 }
 
 type IncomeSummary struct {
