@@ -7,7 +7,8 @@ import (
 	"full-stack-project/domain"
 	"maps"
 	"slices"
-	"sync"
+
+	"golang.org/x/crypto/bcrypt"
 )
 
 type MemoryRepo struct {
@@ -15,7 +16,7 @@ type MemoryRepo struct {
 	expenses map[uint]*domain.Expense
 	incomes  map[uint]*domain.Income
 	roles    []string
-	mu       *sync.Mutex
+	// mu       *sync.Mutex
 }
 
 func NewMemoryRepo() (*MemoryRepo, error) {
@@ -29,6 +30,17 @@ func NewMemoryRepo() (*MemoryRepo, error) {
 
 func SetDefaultRoles() error {
 
+	return nil
+}
+
+func (r *MemoryRepo) AddAdminUser() error {
+	passwordHash, _ := bcrypt.GenerateFromPassword([]byte("admin"), bcrypt.DefaultCost)
+	adminPassword := string(passwordHash)
+
+	err := r.AddUser(context.Background(), "admin", adminPassword, "admin@fullstack.com", "admin")
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -73,39 +85,47 @@ func (r *MemoryRepo) DeleteUser(ctx context.Context, id uint) error {
 	return nil
 }
 
+func (r *MemoryRepo) ChangePassword(ctx context.Context, userID uint, password string) error {
+	user := r.users[userID]
+	user.Password = password
+	r.users[userID] = user
+	return nil
+}
+
 // ---------------------------------------------
-func (r *MemoryRepo) ListIncomes(ctx context.Context) ([]*domain.Income, error) {
+func (r *MemoryRepo) ListIncomes(ctx context.Context, userID uint) ([]*domain.Income, error) {
 	return slices.Collect(maps.Values(r.incomes)), nil
 }
 
-func (r *MemoryRepo) AddIncome(ctx context.Context, amount float64, descrition, category string) error {
+func (r *MemoryRepo) AddIncome(ctx context.Context, amount float64, descrition, category string, userID uint) error {
 	income := domain.Income{}
 	income.ID = 1
 	income.Amount = amount
 	income.Description = descrition
 	income.Category = category
+	income.UserID = userID
 
 	r.incomes[income.ID] = &income
 	return nil
 }
 
-func (r *MemoryRepo) UpdateIncome(ctx context.Context, id uint, amount float64, descrition, category string) error {
+func (r *MemoryRepo) UpdateIncome(ctx context.Context, id uint, amount float64, descrition, category string, userID uint) error {
 	r.incomes[id].Amount = amount
 	r.incomes[id].Description = descrition
 	r.incomes[id].Category = category
 	return nil
 }
 
-func (r *MemoryRepo) DeleteIncome(ctx context.Context, id uint) error {
+func (r *MemoryRepo) DeleteIncome(ctx context.Context, id uint, userID uint) error {
 	delete(r.incomes, id)
 	return nil
 }
 
-func (r *MemoryRepo) ListExpenses(ctx context.Context) ([]*domain.Expense, error) {
+func (r *MemoryRepo) ListExpenses(ctx context.Context, userID uint) ([]*domain.Expense, error) {
 	return slices.Collect(maps.Values(r.expenses)), nil
 }
 
-func (r *MemoryRepo) AddExpense(ctx context.Context, amount float64, descrition, category string) error {
+func (r *MemoryRepo) AddExpense(ctx context.Context, amount float64, descrition, category string, userID uint) error {
 	expense := domain.Expense{}
 
 	expense.ID = 1
@@ -117,14 +137,14 @@ func (r *MemoryRepo) AddExpense(ctx context.Context, amount float64, descrition,
 	return nil
 }
 
-func (r *MemoryRepo) UpdateExpense(ctx context.Context, id uint, amount float64, descrition, category string) error {
+func (r *MemoryRepo) UpdateExpense(ctx context.Context, id uint, amount float64, descrition, category string, userID uint) error {
 	r.expenses[id].Amount = amount
 	r.expenses[id].Description = descrition
 	r.expenses[id].Category = category
 	return nil
 }
 
-func (r *MemoryRepo) DeleteExpense(ctx context.Context, id uint) error {
+func (r *MemoryRepo) DeleteExpense(ctx context.Context, id uint, userID uint) error {
 	delete(r.expenses, id)
 	return nil
 }
@@ -133,11 +153,11 @@ func (r *MemoryRepo) CheckUserCredentials(ctx context.Context, username, passwor
 	return nil
 }
 
-func (r *MemoryRepo) ReportIncomes(ctx context.Context, from, to string) ([]*domain.Income, error) {
+func (r *MemoryRepo) ReportIncomes(ctx context.Context, from, to string, userID uint) ([]*domain.Income, error) {
 	return slices.Collect(maps.Values(r.incomes)), nil
 }
 
-func (r *MemoryRepo) ReportExpenses(ctx context.Context, from, to string) ([]*domain.Expense, error) {
+func (r *MemoryRepo) ReportExpenses(ctx context.Context, from, to string, userID uint) ([]*domain.Expense, error) {
 	return slices.Collect(maps.Values(r.expenses)), nil
 }
 
@@ -150,14 +170,14 @@ func (r *MemoryRepo) GetUserInfo(ctx context.Context, username string) (*domain.
 	return nil, errors.New(shared.ErrNotFoundUser)
 }
 
-func (r *MemoryRepo) IncomesSummary(ctx context.Context) ([]*domain.IncomeSummary, error) {
+func (r *MemoryRepo) IncomesSummary(ctx context.Context, userID uint) ([]*domain.IncomeSummary, error) {
 	return nil, nil
 }
 
-func (r *MemoryRepo) ExpensesSummary(ctx context.Context) ([]*domain.ExpenseSummary, error) {
+func (r *MemoryRepo) ExpensesSummary(ctx context.Context, userID uint) ([]*domain.ExpenseSummary, error) {
 	return nil, nil
 }
 
-func (r *MemoryRepo) OverallSummary(ctx context.Context, from, to string) ([]*domain.IncomeSummary, error) {
+func (r *MemoryRepo) OverallSummary(ctx context.Context, from, to string, userID uint) ([]*domain.IncomeSummary, error) {
 	return nil, nil
 }
