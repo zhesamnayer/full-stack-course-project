@@ -3,11 +3,13 @@ package api
 import (
 	"context"
 	shared "full-stack-project/Shared"
+	"full-stack-project/domain"
 	"full-stack-project/repo"
-	"github.com/gin-gonic/gin"
 	"net/http"
 	"reflect"
 	"time"
+
+	"github.com/gin-gonic/gin"
 )
 
 const TokenLifeTime = time.Minute * 60
@@ -22,12 +24,12 @@ type CommonTypeWithStringTime struct {
 }
 
 type Handler struct {
-	repo *repo.DBRepository
+	Repo *repo.DBRepository
 }
 
 func NewHandler(repo *repo.DBRepository) *Handler {
 	return &Handler{
-		repo: repo,
+		Repo: repo,
 	}
 }
 
@@ -43,30 +45,15 @@ func (h *Handler) OverallSummary(c *gin.Context) {
 		return
 	}
 
-	res, err := h.repo.Repo.OverallSummary(ctx, from, to)
+	user := h.GetUserByName(c)
+
+	res, err := h.Repo.Repo.OverallSummary(ctx, from, to, user.ID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{shared.ErrKeyword: shared.ErrInternalError})
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{shared.OkKeyword: res})
 }
-
-//func TimeConversion(c *gin.Context) (time.Time, time.Time, error) {
-//	fromStr := c.Query("from")
-//	toStr := c.Query("to")
-//
-//	fromInt, err1 := strconv.ParseInt(fromStr, 10, 64)
-//	toInt, err2 := strconv.ParseInt(toStr, 10, 64)
-//
-//	if err1 != nil || err2 != nil {
-//		return time.Time{}, time.Time{}, errors.New(shared.ErrBadRequest)
-//	}
-//
-//	from := time.Unix(fromInt, 0)
-//	to := time.Unix(toInt, 0)
-//
-//	return from, to, nil
-//}
 
 func GetFieldNames(v interface{}) []string {
 	t := reflect.TypeOf(v)
@@ -88,4 +75,12 @@ func GetFieldNames(v interface{}) []string {
 	}
 
 	return fields
+}
+
+func (h *Handler) GetUserByName(c *gin.Context) *domain.User {
+	u, _ := c.Get("username")
+	username, _ := u.(string)
+	user, _ := h.Repo.Repo.GetUserInfo(context.Background(), username)
+
+	return user
 }

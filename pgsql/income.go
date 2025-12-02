@@ -3,63 +3,68 @@ package pgsql
 import (
 	"context"
 	"full-stack-project/domain"
+	"log"
 )
 
-func (r *PqsqlRepo) ListIncomes(ctx context.Context) ([]*domain.Income, error) {
+func (r *PqsqlRepo) ListIncomes(ctx context.Context, userID uint) ([]*domain.Income, error) {
 	var incomes []*domain.Income
-	err := r.conn.Find(&incomes).Error
+	err := r.conn.WithContext(ctx).Where("user_id = ?", userID).Find(&incomes).Error
 	if err != nil {
 		return nil, err
 	}
 	return incomes, nil
 }
 
-func (r *PqsqlRepo) AddIncome(ctx context.Context, amount float64, descrition, category string) error {
+func (r *PqsqlRepo) AddIncome(ctx context.Context, amount float64, descrition, category string, userID uint) error {
 	income := &domain.Income{
 		Amount:      amount,
 		Description: descrition,
 		Category:    category,
+		UserID:      userID,
 	}
 
-	err := r.conn.Create(income).Error
+	err := r.conn.WithContext(ctx).Create(income).Error
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (r *PqsqlRepo) UpdateIncome(ctx context.Context, id uint, amount float64, description, category string) error {
-	// Finding the income
-	var income domain.Income
-	r.conn.Find(&income).Where("ID = ", id)
+func (r *PqsqlRepo) UpdateIncome(ctx context.Context, id uint, amount float64, description, category string, userID uint) error {
 
-	// Update the income information
-	income.ID = id
-	income.Amount = amount
-	income.Description = description
-	income.Category = category
+	result := r.conn.WithContext(ctx).
+		Model(&domain.Income{}).
+		Where("ID = ? and user_id = ?", id, userID).
+		Updates(domain.Income{
+			Amount:      amount,
+			Description: description,
+			Category:    category,
+		})
 
-	// Save the income
-	err := r.conn.Save(&income).Error
-	if err != nil {
-		return err
+	if result.Error != nil {
+		return result.Error
 	}
 
 	return nil
 }
 
-func (r *PqsqlRepo) DeleteIncome(ctx context.Context, id uint) error {
-	err := r.conn.Delete(domain.Income{}, "ID  = ?", id).Error
+func (r *PqsqlRepo) DeleteIncome(ctx context.Context, id uint, userID uint) error {
+	err := r.conn.WithContext(ctx).Delete(domain.Income{}, "ID  = ? and user_id = ?", id, userID).Error
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (r *PqsqlRepo) ReportIncomes(ctx context.Context, from, to string) ([]*domain.Income, error) {
+func (r *PqsqlRepo) ReportIncomes(ctx context.Context, from, to string, userID uint) ([]*domain.Income, error) {
 	var incomes []*domain.Income
 
-	err := r.conn.Model(domain.Income{}).Where("created_at >= ? and created_at <= ?", from, to).Find(&incomes).Error
+	log.Printf("from: %s", from)
+	log.Printf("to: %s", to)
+
+	err := r.conn.WithContext(ctx).Model(domain.Income{}).
+		Where("created_at >= ? and created_at <= ? and user_id = ?", from, to, userID).
+		Find(&incomes).Error
 	if err != nil {
 		return nil, err
 	}
@@ -67,10 +72,11 @@ func (r *PqsqlRepo) ReportIncomes(ctx context.Context, from, to string) ([]*doma
 	return incomes, nil
 }
 
-func (r *PqsqlRepo) IncomesSummary(ctx context.Context) ([]*domain.IncomeSummary, error) {
+func (r *PqsqlRepo) IncomesSummary(ctx context.Context, userID uint) ([]*domain.IncomeSummary, error) {
 	var summary []*domain.IncomeSummary
 
-	err := r.conn.Model(domain.Income{}).
+	err := r.conn.WithContext(ctx).Model(domain.Income{}).
+		Where("user_id = ?", userID).
 		Select("category, sum(amount) as amount").
 		Group("category").
 		Scan(&summary).Error

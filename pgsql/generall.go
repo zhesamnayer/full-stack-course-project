@@ -5,13 +5,13 @@ import (
 	"full-stack-project/domain"
 )
 
-func (r *PqsqlRepo) OverallSummary(ctx context.Context, from, to string) ([]*domain.IncomeSummary, error) {
+func (r *PqsqlRepo) OverallSummary(ctx context.Context, from, to string, userID uint) ([]*domain.IncomeSummary, error) {
 
 	var sumIncomes float64
 
 	err := r.conn.Model(domain.Income{}).
 		Select("SUM(amount)").
-		Where("created_at >= ? AND created_at <=?", from, to).Scan(&sumIncomes).Error
+		Where("created_at >= ? AND created_at <=? AND user_id = ?", from, to, userID).Scan(&sumIncomes).Error
 
 	if err != nil {
 		return nil, err
@@ -21,7 +21,7 @@ func (r *PqsqlRepo) OverallSummary(ctx context.Context, from, to string) ([]*dom
 
 	err = r.conn.Model(domain.Expense{}).
 		Select("SUM(amount)").
-		Where("created_at >= ? AND created_at <=?", from, to).Scan(&sumExpenses).Error
+		Where("created_at >= ? AND created_at <=? AND user_id = ?", from, to, userID).Scan(&sumExpenses).Error
 
 	if err != nil {
 		return nil, err

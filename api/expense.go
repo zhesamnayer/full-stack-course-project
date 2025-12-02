@@ -7,10 +7,11 @@ import (
 	"fmt"
 	shared "full-stack-project/Shared"
 	"full-stack-project/domain"
-	"github.com/gin-gonic/gin"
 	"net/http"
 	"strconv"
 	"time"
+
+	"github.com/gin-gonic/gin"
 )
 
 func (h *Handler) AddExpense(c *gin.Context) {
@@ -28,7 +29,9 @@ func (h *Handler) AddExpense(c *gin.Context) {
 		return
 	}
 
-	err = h.repo.Repo.AddExpense(ctx, expense.Amount, expense.Description, expense.Category)
+	user := h.GetUserByName(c)
+
+	err = h.Repo.Repo.AddExpense(ctx, expense.Amount, expense.Description, expense.Category, user.ID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{shared.ErrKeyword: shared.ErrAddingExpense})
 		return
@@ -54,7 +57,9 @@ func (h *Handler) UpdateExpense(c *gin.Context) {
 		return
 	}
 
-	err = h.repo.Repo.UpdateExpense(ctx, expense.ID, expense.Amount, expense.Description, expense.Category)
+	user := h.GetUserByName(c)
+
+	err = h.Repo.Repo.UpdateExpense(ctx, expense.ID, expense.Amount, expense.Description, expense.Category, user.ID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{shared.ErrKeyword: shared.ErrAddingExpense})
 		return
@@ -67,8 +72,10 @@ func (h *Handler) DeleteExpense(c *gin.Context) {
 	ctx, cancel := context.WithTimeout(c, 100*time.Millisecond)
 	defer cancel()
 
+	user := h.GetUserByName(c)
+
 	ExpInt, _ := strconv.Atoi(c.Query("id"))
-	err := h.repo.Repo.DeleteExpense(ctx, uint(ExpInt))
+	err := h.Repo.Repo.DeleteExpense(ctx, uint(ExpInt), user.ID)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{shared.ErrKeyword: shared.ErrDeletingExpense})
 		return
@@ -81,7 +88,9 @@ func (h *Handler) Expenses(c *gin.Context) {
 	ctx, cancel := context.WithTimeout(c, 100*time.Millisecond)
 	defer cancel()
 
-	expenses, err := h.repo.Repo.ListExpenses(ctx)
+	user := h.GetUserByName(c)
+
+	expenses, err := h.Repo.Repo.ListExpenses(ctx, user.ID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{shared.ErrKeyword: shared.ErrListingExpenses})
 		return
@@ -97,27 +106,29 @@ func (h *Handler) ReportExpenses(c *gin.Context) {
 	from := c.Query("from")
 	to := c.Query("to")
 
-	expenses, err := h.repo.Repo.ReportExpenses(ctx, from, to)
+	user := h.GetUserByName(c)
+
+	expenses, err := h.Repo.Repo.ReportExpenses(ctx, from, to, user.ID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, shared.ErrListingExpenses)
 		return
 	}
 
-	var newExpenses []CommonTypeWithStringTime
+	// var newExpenses []CommonTypeWithStringTime
 
-	for i, _ := range expenses {
-		ni := CommonTypeWithStringTime{
-			ID:          expenses[i].ID,
-			Amount:      expenses[i].Amount,
-			CreatedAt:   shared.UnixTimeToRFC339(expenses[i].CreatedAt),
-			Description: expenses[i].Description,
-			Category:    expenses[i].Category,
-		}
+	// for i, _ := range expenses {
+	// 	ni := CommonTypeWithStringTime{
+	// 		ID:          expenses[i].ID,
+	// 		Amount:      expenses[i].Amount,
+	// 		CreatedAt:   shared.UnixTimeToRFC339(expenses[i].CreatedAt),
+	// 		Description: expenses[i].Description,
+	// 		Category:    expenses[i].Category,
+	// 	}
 
-		newExpenses = append(newExpenses, ni)
-	}
+	// 	newExpenses = append(newExpenses, ni)
+	// }
 
-	c.JSON(http.StatusOK, newExpenses)
+	c.JSON(http.StatusOK, expenses)
 }
 
 func (h *Handler) ExportExpenses(c *gin.Context) {
@@ -127,7 +138,9 @@ func (h *Handler) ExportExpenses(c *gin.Context) {
 	from := c.Query("from")
 	to := c.Query("to")
 
-	expenses, err := h.repo.Repo.ReportExpenses(ctx, from, to)
+	user := h.GetUserByName(c)
+
+	expenses, err := h.Repo.Repo.ReportExpenses(ctx, from, to, user.ID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{shared.ErrKeyword: shared.ErrListingIncomes})
 		return
@@ -177,7 +190,9 @@ func (h *Handler) ExpenseSummary(c *gin.Context) {
 	ctx, cancel := context.WithTimeout(c, 5*time.Second)
 	defer cancel()
 
-	res, err := h.repo.Repo.ExpensesSummary(ctx)
+	user := h.GetUserByName(c)
+
+	res, err := h.Repo.Repo.ExpensesSummary(ctx, user.ID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{shared.ErrKeyword: shared.ErrInternalError})
 		return

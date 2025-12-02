@@ -7,10 +7,11 @@ import (
 	"fmt"
 	shared "full-stack-project/Shared"
 	"full-stack-project/domain"
-	"github.com/gin-gonic/gin"
 	"net/http"
 	"strconv"
 	"time"
+
+	"github.com/gin-gonic/gin"
 )
 
 func (h *Handler) AddIncome(c *gin.Context) {
@@ -28,7 +29,9 @@ func (h *Handler) AddIncome(c *gin.Context) {
 		return
 	}
 
-	err = h.repo.Repo.AddIncome(ctx, income.Amount, income.Description, income.Category)
+	user := h.GetUserByName(c)
+
+	err = h.Repo.Repo.AddIncome(ctx, income.Amount, income.Description, income.Category, user.ID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{shared.ErrKeyword: shared.ErrAddingIncome})
 		return
@@ -53,7 +56,9 @@ func (h *Handler) UpdateIncome(c *gin.Context) {
 		return
 	}
 
-	err = h.repo.Repo.UpdateIncome(ctx, income.ID, income.Amount, income.Description, income.Category)
+	user := h.GetUserByName(c)
+
+	err = h.Repo.Repo.UpdateIncome(ctx, income.ID, income.Amount, income.Description, income.Category, user.ID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{shared.ErrKeyword: shared.ErrAddingIncome})
 		return
@@ -66,8 +71,11 @@ func (h *Handler) DeleteIncome(c *gin.Context) {
 	ctx, cancel := context.WithTimeout(c, 100*time.Millisecond)
 	defer cancel()
 
+	user := h.GetUserByName(c)
+
 	IncID, _ := strconv.Atoi(c.Query("id"))
-	err := h.repo.Repo.DeleteIncome(ctx, uint(IncID))
+
+	err := h.Repo.Repo.DeleteIncome(ctx, uint(IncID), user.ID)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{shared.ErrKeyword: shared.ErrDeleteIncome})
 		return
@@ -80,7 +88,9 @@ func (h *Handler) Incomes(c *gin.Context) {
 	ctx, cancel := context.WithTimeout(c, 100*time.Millisecond)
 	defer cancel()
 
-	incomes, err := h.repo.Repo.ListIncomes(ctx)
+	user := h.GetUserByName(c)
+
+	incomes, err := h.Repo.Repo.ListIncomes(ctx, user.ID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{shared.ErrKeyword: shared.ErrListingIncomes})
 		return
@@ -96,27 +106,29 @@ func (h *Handler) ReportIncomes(c *gin.Context) {
 	from := c.Query("from")
 	to := c.Query("to")
 
-	incomes, err := h.repo.Repo.ReportIncomes(ctx, from, to)
+	user := h.GetUserByName(c)
+
+	incomes, err := h.Repo.Repo.ReportIncomes(ctx, from, to, user.ID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, shared.ErrListingIncomes)
 		return
 	}
 
-	var newIncomes []CommonTypeWithStringTime
+	// var newIncomes []CommonTypeWithStringTime
 
-	for i, _ := range incomes {
-		ni := CommonTypeWithStringTime{
-			ID:          incomes[i].ID,
-			Amount:      incomes[i].Amount,
-			CreatedAt:   shared.UnixTimeToRFC339(incomes[i].CreatedAt),
-			Description: incomes[i].Description,
-			Category:    incomes[i].Category,
-		}
+	// for i, _ := range incomes {
+	// 	ni := CommonTypeWithStringTime{
+	// 		ID:          incomes[i].ID,
+	// 		Amount:      incomes[i].Amount,
+	// 		CreatedAt:   shared.UnixTimeToRFC339(incomes[i].CreatedAt),
+	// 		Description: incomes[i].Description,
+	// 		Category:    incomes[i].Category,
+	// 	}
 
-		newIncomes = append(newIncomes, ni)
-	}
+	// 	newIncomes = append(newIncomes, ni)
+	// }
 
-	c.JSON(http.StatusOK, newIncomes)
+	c.JSON(http.StatusOK, incomes)
 }
 
 func (h *Handler) ExportIncomes(c *gin.Context) {
@@ -126,7 +138,9 @@ func (h *Handler) ExportIncomes(c *gin.Context) {
 	from := c.Query("from")
 	to := c.Query("to")
 
-	incomes, err := h.repo.Repo.ReportIncomes(ctx, from, to)
+	user := h.GetUserByName(c)
+
+	incomes, err := h.Repo.Repo.ReportIncomes(ctx, from, to, user.ID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{shared.ErrKeyword: shared.ErrListingIncomes})
 		return
@@ -176,7 +190,9 @@ func (h *Handler) IncomeSummary(c *gin.Context) {
 	ctx, cancel := context.WithTimeout(c, 5*time.Second)
 	defer cancel()
 
-	res, err := h.repo.Repo.IncomesSummary(ctx)
+	user := h.GetUserByName(c)
+
+	res, err := h.Repo.Repo.IncomesSummary(ctx, user.ID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{shared.ErrKeyword: shared.ErrInternalError})
 		return

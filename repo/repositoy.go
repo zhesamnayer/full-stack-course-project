@@ -22,21 +22,23 @@ type Repository interface {
 	UpdateUser(ctx context.Context, id uint, name, email, role string) error
 	DeleteUser(ctx context.Context, id uint) error
 	GetUserInfo(ctx context.Context, username string) (*domain.User, error)
+	ChangePassword(ctx context.Context, userID uint, password string) error
+	AddAdminUser() error
 
-	ListIncomes(ctx context.Context) ([]*domain.Income, error)
-	AddIncome(ctx context.Context, amount float64, descrition, category string) error
-	UpdateIncome(ctx context.Context, id uint, amount float64, descrition, category string) error
-	DeleteIncome(ctx context.Context, id uint) error
-	ReportIncomes(ctx context.Context, from, to string) ([]*domain.Income, error)
+	ListIncomes(ctx context.Context, userID uint) ([]*domain.Income, error)
+	AddIncome(ctx context.Context, amount float64, descrition, category string, userID uint) error
+	UpdateIncome(ctx context.Context, id uint, amount float64, descrition, category string, userID uint) error
+	DeleteIncome(ctx context.Context, id uint, userID uint) error
+	ReportIncomes(ctx context.Context, from, to string, userID uint) ([]*domain.Income, error)
 
-	ListExpenses(ctx context.Context) ([]*domain.Expense, error)
-	AddExpense(ctx context.Context, amount float64, descrition, category string) error
-	UpdateExpense(ctx context.Context, id uint, amount float64, descrition, category string) error
-	DeleteExpense(ctx context.Context, id uint) error
-	ReportExpenses(ctx context.Context, from, to string) ([]*domain.Expense, error)
+	ListExpenses(ctx context.Context, userID uint) ([]*domain.Expense, error)
+	AddExpense(ctx context.Context, amount float64, descrition, category string, userID uint) error
+	UpdateExpense(ctx context.Context, id uint, amount float64, descrition, category string, userID uint) error
+	DeleteExpense(ctx context.Context, id uint, userID uint) error
+	ReportExpenses(ctx context.Context, from, to string, userID uint) ([]*domain.Expense, error)
 
-	IncomesSummary(ctx context.Context) ([]*domain.IncomeSummary, error)
-	ExpensesSummary(ctx context.Context) ([]*domain.ExpenseSummary, error)
+	IncomesSummary(ctx context.Context, userID uint) ([]*domain.IncomeSummary, error)
+	ExpensesSummary(ctx context.Context, userID uint) ([]*domain.ExpenseSummary, error)
 
-	OverallSummary(ctx context.Context, from, to string) ([]*domain.IncomeSummary, error)
+	OverallSummary(ctx context.Context, from, to string, userID uint) ([]*domain.IncomeSummary, error)
 }
