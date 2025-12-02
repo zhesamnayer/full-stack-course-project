@@ -4,6 +4,7 @@ import ShopIcon from '@mui/icons-material/Shop';
 import LogoutIcon from '@mui/icons-material/Logout';
 import GroupIcon from '@mui/icons-material/Group';
 import AssessmentIcon from '@mui/icons-material/Assessment';
+import PersonIcon from '@mui/icons-material/Person';
 
 export const SidebarData = [
     {
@@ -25,6 +26,11 @@ export const SidebarData = [
         title: "Report",
         icon: <AssessmentIcon />,
         link: "/report"
+    },
+    {
+        title: "User Info",
+        icon: <PersonIcon />,
+        link: "/userinfo"
     },
     {
         title: "Users",

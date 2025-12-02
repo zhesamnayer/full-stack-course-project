@@ -49,7 +49,7 @@ export default function PieChartIncomes() {
   };
 
   return (
-    <div style={{ width: 400, height: 400 }}>
+    <div style={{ width: 300, height: 300 }}>
       <PieChart
         series={[
         {
@@ -57,10 +57,22 @@ export default function PieChartIncomes() {
           highlightScope: { fade: 'global', highlight: 'item' },
           faded: { innerRadius: 30, additionalRadius: -30, color: 'gray' },
           valueFormatter: (item) => `${item.value} €`,
+          label: { color: 'white' },
         },
         ]}
-        height={300}
-        width={300}
+        height={250}
+        width={250}
+        sx={{
+          '& .MuiChartsLegend-root': {
+            color: 'white !important',
+          },
+          '& .MuiChartsLegend-label': {
+            color: 'white !important',
+          },
+          '& text': {
+            fill: 'white !important',
+          },
+        }}
       />
     </div>
   );

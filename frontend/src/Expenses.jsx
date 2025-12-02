@@ -8,7 +8,9 @@ import {
   DialogContent,
   DialogTitle,
   TextField,
+  Box,
 } from "@mui/material";
+import dayjs from "dayjs";
 
 export default function Expenses() {
   const baseUrl = sessionStorage.getItem("baseUrl");
@@ -37,21 +39,69 @@ export default function Expenses() {
   };
 
   const columns = [
-    { field: "displayId", headerName: "ID", width: 70, align: "left", headerAlign: "left" },
-    { field: "amount", headerName: "Amount", width: 100, editable: true, type: "number", align: "left", headerAlign: "left" },
-    { field: "description", headerName: "Description", width: 300, editable: true, align: "left", headerAlign: "left" },
-    { field: "category", headerName: "Category", width: 140, editable: true, align: "left", headerAlign: "left" },
+    { field: "displayId", headerName: "ID", width: 70, align: "left", headerAlign: "left",
+      renderHeader: () => (
+      <strong>
+        {'ID'}
+      </strong>
+      )
+     },
+     { field: "created_at", headerName: "Time", width: 180, align: "left", headerAlign: "left",
+      renderHeader: () => (
+      <strong>
+        {'Time'}
+      </strong>
+      ),
+      renderCell: (params) => {
+        // Convert Unix timestamp to RFC3339 format
+        const unixTimestamp = params.value;
+        if (!unixTimestamp) return '';
+
+        try {
+          return dayjs.unix(unixTimestamp).format("YYYY-MM-DD HH:mm:ss");
+        } catch (error) {
+          return unixTimestamp; // Fallback to original value if conversion fails
+        }
+      }
+     },
+    { field: "amount", headerName: "Amount", width: 100, editable: true, type: "number", align: "left", headerAlign: "left",
+      renderHeader: () => (
+      <strong>
+        {'Amount'}
+      </strong>
+      )
+     },
+    { field: "description", headerName: "Description", width: 300, editable: true, align: "left", headerAlign: "left",
+      renderHeader: () => (
+      <strong>
+        {'Description'}
+      </strong>
+      )
+     },
+    { field: "category", headerName: "Category", width: 140, editable: true, align: "left", headerAlign: "left",
+      renderHeader: () => (
+      <strong>
+        {'Category'}
+      </strong>
+      )
+     },
       // Management column
   {
     field: "actions",
     headerName: "Actions",
     width: 250,
+    renderHeader: () => (
+      <strong>
+        {'Actions'}
+      </strong>
+      ),
     renderCell: (params) => (
       <div style={{ display: "flex", gap: "10px" }}>
         <Button
           variant="contained"
           color="primary"
           onClick={() => handleUpdate(params.row)}
+          sx={{ textTransform: "none" }}
         >
           Update
         </Button>
@@ -60,6 +110,7 @@ export default function Expenses() {
           variant="contained"
           color="error"
           onClick={() => handleDelete(params.row.id)}
+          sx={{ textTransform: "none" }}
         >
           Delete
         </Button>
@@ -208,11 +259,22 @@ export default function Expenses() {
   }, []);
 
   return (
-    <div style={{ height: 600, width: "100%" }}>
+    <Box
+      sx={{
+        minHeight: '100vh',
+        backgroundImage: 'url(/back.png)',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
+        height: 600,
+        width: "100%",
+      }}
+    >
 
-      <div style={{ padding:"20px", width:"200px"}}>
-        <Button variant="contained" onClick={handleOpen}>
-          Add New Expense
+      <div style={{ padding:"20px", width:"400px"}}>
+        <h2 style={{ color: "white" }}>Your expenses in the last month</h2>
+        <Button variant="contained" onClick={handleOpen} sx={{ textTransform: "none" }}>
+          New Expense
         </Button>
       </div>
 
@@ -245,8 +307,8 @@ export default function Expenses() {
         </DialogContent>
 
         <DialogActions>
-          <Button onClick={handleClose}>Cancel</Button>
-          <Button variant="contained" onClick={handleInsert}>
+          <Button onClick={handleClose} sx={{ textTransform: "none" }}>Cancel</Button>
+          <Button variant="contained" onClick={handleInsert} sx={{ textTransform: "none" }}>
             Send
           </Button>
         </DialogActions>
@@ -273,6 +335,6 @@ export default function Expenses() {
         anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
       />
 
-    </div>
+    </Box>
   );
 }

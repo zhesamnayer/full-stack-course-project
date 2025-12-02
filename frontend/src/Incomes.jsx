@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { DataGrid } from "@mui/x-data-grid";
+import { DataGrid } from '@mui/x-data-grid';
 import Snackbar from "@mui/material/Snackbar";
 import {
   Button,
@@ -8,7 +8,9 @@ import {
   DialogContent,
   DialogTitle,
   TextField,
+  Box,
 } from "@mui/material";
+import dayjs from "dayjs";
 
 export default function Incomes() {
   const baseUrl = sessionStorage.getItem("baseUrl");
@@ -37,20 +39,68 @@ export default function Incomes() {
   };
 
   const columns = [
-    { field: "displayId", headerName: "ID", width: 70, align: "left", headerAlign: "left" },
-    { field: "amount", headerName: "Amount", width: 100, editable: true, type: "number", align: "left", headerAlign: "left" },
-    { field: "description", headerName: "Description", width: 300, editable: true, align: "left", headerAlign: "left" },
-    { field: "category", headerName: "Category", width: 140, editable: true, align: "left", headerAlign: "left" },
+    { field: "displayId", headerName: "ID", width: 70, align: "left", headerAlign: "left",
+      renderHeader: () => (
+      <strong>
+        {'ID'}
+      </strong>
+      )
+     },
+     { field: "created_at", headerName: "Time", width: 180, align: "left", headerAlign: "left",
+      renderHeader: () => (
+      <strong>
+        {'Time'}
+      </strong>
+      ),
+      renderCell: (params) => {
+        // Convert Unix timestamp to RFC3339 format
+        const unixTimestamp = params.value;
+        if (!unixTimestamp) return '';
+
+        try {
+          return dayjs.unix(unixTimestamp).format("YYYY-MM-DD HH:mm:ss");
+        } catch (error) {
+          return unixTimestamp; // Fallback to original value if conversion fails
+        }
+      }
+     },
+    { field: "amount", headerName: "Amount", width: 100, editable: true, type: "number", align: "left", headerAlign: "left",
+        renderHeader: () => (
+      <strong>
+        {'Amount'}
+      </strong>
+      )
+     },
+    { field: "description", headerName: "Description", width: 300, editable: true, align: "left", headerAlign: "left",
+       renderHeader: () => (
+      <strong>
+        {'Description'}
+      </strong>
+      )
+     },
+    { field: "category", headerName: "Category", width: 140, editable: true, align: "left", headerAlign: "left",
+      renderHeader: () => (
+      <strong>
+        {'Category'}
+      </strong>
+      )
+     },
   {
     field: "actions",
     headerName: "Actions",
     width: 250,
+    renderHeader: () => (
+      <strong>
+        {'Actions'}
+      </strong>
+      ),
     renderCell: (params) => (
-      <div style={{ display: "flex", gap: "10px" }}>
+      <div style={{ display: "flex", gap: "10px",justifyContent: "left", }}>
         <Button
           variant="contained"
           color="primary"
           onClick={() => handleUpdate(params.row)}
+          sx={{ textTransform: "none" }}
         >
           Update
         </Button>
@@ -59,6 +109,7 @@ export default function Incomes() {
           variant="contained"
           color="error"
           onClick={() => handleDelete(params.row.id)}
+          sx={{ textTransform: "none" }}
         >
           Delete
         </Button>
@@ -206,11 +257,23 @@ export default function Incomes() {
   }, []);
 
   return (
-    <div style={{ height: 600, width: "100%" }}>
+    <Box
+      sx={{
+        minHeight: '100vh',
+        backgroundImage: 'url(/back.png)',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
+        height: 600,
+        width: "100%",
+      }}
+    >
 
-      <div style={{ padding:"20px", width:"200px"}}>
-        <Button variant="contained" onClick={handleOpen}>
-          Add New Income
+      <div style={{ padding:"20px", width:"400px"}}>
+
+        <h2 style={{ color: "white" }}>Your incomes in the last month</h2>
+        <Button variant="contained" onClick={handleOpen} sx={{ textTransform: "none" }}>
+          New Income
         </Button>
       </div>
 
@@ -242,9 +305,9 @@ export default function Incomes() {
           />
         </DialogContent>
 
-        <DialogActions>
-          <Button onClick={handleClose}>Cancel</Button>
-          <Button variant="contained" onClick={handleInsert}>
+        <DialogActions >
+          <Button onClick={handleClose} sx={{ textTransform: "none" }}>Cancel</Button>
+          <Button variant="contained" onClick={handleInsert} sx={{ textTransform: "none" }}>
             Send
           </Button>
         </DialogActions>
@@ -259,6 +322,7 @@ export default function Incomes() {
             sortModel={[{ field: 'id', sort: 'asc' }]} // initial sort
             pageSizeOptions={[10, 25, 50]}
             showToolbar
+            // columnHeaderHeight={50}
           />
     </div>
 
@@ -272,6 +336,6 @@ export default function Incomes() {
         anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
       />
 
-    </div>
+    </Box>
   );
 }
