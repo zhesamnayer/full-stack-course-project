@@ -90,6 +90,7 @@ func main() {
 	router.StaticFile("/back.png", "./dist/back.png")
 	router.StaticFile("/money.ico", "./dist/money.ico")
 	router.StaticFile("/userinfo", "./dist/index.html")
+	router.StaticFile("/upcoming", "./dist/index.html")
 
 	router.POST("/api/v1/signup", h.Signup)
 	router.POST("/api/v1/login", h.Login)
@@ -123,6 +124,17 @@ func main() {
 	router.GET("/api/v1/expenses/summary", api.CheckAuth, h.ExpenseSummary)
 
 	router.GET("/api/v1/summary", api.CheckAuth, h.OverallSummary)
+
+	router.POST("/api/v1/categories/add", api.CheckAuth, h.AddCategory)
+	router.POST("/api/v1/categories/update", api.CheckAuth, h.UpdateCategory)
+	router.DELETE("/api/v1/categories/delete", api.CheckAuth, h.DeleteCategory)
+	router.GET("/api/v1/categories/list", api.CheckAuth, h.Categories)
+
+	router.POST("/api/v1/upcoming_expenses/add", api.CheckAuth, h.AddUpcomingExpense)
+	router.POST("/api/v1/upcoming_expenses/update", api.CheckAuth, h.UpdateUpcomingExpense)
+	router.DELETE("/api/v1/upcoming_expenses/delete", api.CheckAuth, h.DeleteUpcomingExpense)
+	router.GET("/api/v1/upcoming_expenses/list", api.CheckAuth, h.UpcomingExpenses)
+	router.PUT("/api/v1/upcoming_expenses/pay", api.CheckAuth, h.PayUpcomingExpense)
 
 	// Start server
 	strport := strconv.Itoa(options.Server.Port)
@@ -163,7 +175,7 @@ func corsMiddleware() gin.HandlerFunc {
 			c.Writer.Header().Set("Access-Control-Allow-Origin", origin)
 			c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
 			c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, accept, origin, Cache-Control, X-Requested-With")
-			c.Writer.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS, DELETE")
+			c.Writer.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS, DELETE, PUT")
 		}
 
 		// Handle preflight OPTIONS requests by aborting with status 204

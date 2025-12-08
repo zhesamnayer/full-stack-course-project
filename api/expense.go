@@ -19,6 +19,7 @@ func (h *Handler) AddExpense(c *gin.Context) {
 	defer cancel()
 
 	var expense struct {
+		Time        uint64
 		Amount      float64
 		Description string
 		Category    string
@@ -31,11 +32,14 @@ func (h *Handler) AddExpense(c *gin.Context) {
 
 	user := h.GetUserByName(c)
 
-	err = h.Repo.Repo.AddExpense(ctx, expense.Amount, expense.Description, expense.Category, user.ID)
+	err = h.Repo.Repo.AddExpense(ctx, expense.Time, expense.Amount, expense.Description, expense.Category, user.ID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{shared.ErrKeyword: shared.ErrAddingExpense})
 		return
 	}
+
+	// add category if it is new
+	_ = h.Repo.Repo.AddCategory(ctx, "expense", expense.Category, user.ID)
 
 	c.JSON(http.StatusOK, gin.H{shared.OkKeyword: shared.OkAddingExpense})
 }
@@ -46,6 +50,7 @@ func (h *Handler) UpdateExpense(c *gin.Context) {
 
 	var expense struct {
 		ID          uint
+		Time        uint64
 		Amount      float64
 		Description string
 		Category    string
@@ -59,7 +64,7 @@ func (h *Handler) UpdateExpense(c *gin.Context) {
 
 	user := h.GetUserByName(c)
 
-	err = h.Repo.Repo.UpdateExpense(ctx, expense.ID, expense.Amount, expense.Description, expense.Category, user.ID)
+	err = h.Repo.Repo.UpdateExpense(ctx, expense.ID, expense.Time, expense.Amount, expense.Description, expense.Category, user.ID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{shared.ErrKeyword: shared.ErrAddingExpense})
 		return
@@ -88,9 +93,12 @@ func (h *Handler) Expenses(c *gin.Context) {
 	ctx, cancel := context.WithTimeout(c, 100*time.Millisecond)
 	defer cancel()
 
+	from := c.Query("from")
+	to := c.Query("to")
+
 	user := h.GetUserByName(c)
 
-	expenses, err := h.Repo.Repo.ListExpenses(ctx, user.ID)
+	expenses, err := h.Repo.Repo.ListExpenses(ctx, from, to, user.ID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{shared.ErrKeyword: shared.ErrListingExpenses})
 		return
@@ -190,9 +198,12 @@ func (h *Handler) ExpenseSummary(c *gin.Context) {
 	ctx, cancel := context.WithTimeout(c, 5*time.Second)
 	defer cancel()
 
+	from := c.Query("from")
+	to := c.Query("to")
+
 	user := h.GetUserByName(c)
 
-	res, err := h.Repo.Repo.ExpensesSummary(ctx, user.ID)
+	res, err := h.Repo.Repo.ExpensesSummary(ctx, from, to, user.ID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{shared.ErrKeyword: shared.ErrInternalError})
 		return

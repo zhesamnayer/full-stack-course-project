@@ -25,20 +25,36 @@ type Repository interface {
 	ChangePassword(ctx context.Context, userID uint, password string) error
 	AddAdminUser() error
 
-	ListIncomes(ctx context.Context, userID uint) ([]*domain.Income, error)
-	AddIncome(ctx context.Context, amount float64, descrition, category string, userID uint) error
-	UpdateIncome(ctx context.Context, id uint, amount float64, descrition, category string, userID uint) error
+	// Incomes
+	ListIncomes(ctx context.Context, from, to string, userID uint) ([]*domain.Income, error)
+	AddIncome(ctx context.Context, time uint64, amount float64, descrition, category string, userID uint) error
+	UpdateIncome(ctx context.Context, id uint, time uint64, amount float64, descrition, category string, userID uint) error
 	DeleteIncome(ctx context.Context, id uint, userID uint) error
 	ReportIncomes(ctx context.Context, from, to string, userID uint) ([]*domain.Income, error)
+	IncomesSummary(ctx context.Context, from, to string, userID uint) ([]domain.IncomeSummary, error)
 
-	ListExpenses(ctx context.Context, userID uint) ([]*domain.Expense, error)
-	AddExpense(ctx context.Context, amount float64, descrition, category string, userID uint) error
-	UpdateExpense(ctx context.Context, id uint, amount float64, descrition, category string, userID uint) error
+	// Expenses
+	ListExpenses(ctx context.Context, from, to string, userID uint) ([]*domain.Expense, error)
+	AddExpense(ctx context.Context, time uint64, amount float64, descrition, category string, userID uint) error
+	UpdateExpense(ctx context.Context, id uint, time uint64, amount float64, descrition, category string, userID uint) error
 	DeleteExpense(ctx context.Context, id uint, userID uint) error
 	ReportExpenses(ctx context.Context, from, to string, userID uint) ([]*domain.Expense, error)
+	ExpensesSummary(ctx context.Context, from, to string, userID uint) ([]*domain.ExpenseSummary, error)
 
-	IncomesSummary(ctx context.Context, userID uint) ([]*domain.IncomeSummary, error)
-	ExpensesSummary(ctx context.Context, userID uint) ([]*domain.ExpenseSummary, error)
+	// Summary
+	OverallSummary(ctx context.Context, from, to string, userID uint) (*domain.Summary, error)
 
-	OverallSummary(ctx context.Context, from, to string, userID uint) ([]*domain.IncomeSummary, error)
+	// Categories
+	ListCategories(ctx context.Context, _type string, userID uint) ([]*domain.Category, error)
+	AddCategory(ctx context.Context, _type string, name string, userID uint) error
+	UpdateCategory(ctx context.Context, id uint, _type string, name string, userID uint) error
+	DeleteCategory(ctx context.Context, id uint, userID uint) error
+
+	// Upcoming Expenses
+	ListUpcomingExpenses(ctx context.Context, from, to string, userID uint) ([]*domain.UpcomingExpense, error)
+	AddUpcomingExpense(ctx context.Context, time uint64, amount float64, descrition, category string, userID uint) error
+	UpdateUpcomingExpense(ctx context.Context, id uint, time uint64, amount float64, descrition, category string, userID uint) error
+	DeleteUpcomingExpense(ctx context.Context, id uint, userID uint) error
+	PayUpcomingExpense(ctx context.Context, id uint, userID uint) error
+	UpcomingExpensesSummary(ctx context.Context, from, to string, userID uint) ([]*domain.UpcomingExpenseSummary, error)
 }

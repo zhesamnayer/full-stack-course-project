@@ -6,17 +6,23 @@ import (
 	"log"
 )
 
-func (r *PqsqlRepo) ListIncomes(ctx context.Context, userID uint) ([]*domain.Income, error) {
+func (r *PqsqlRepo) ListIncomes(ctx context.Context, from, to string, userID uint) ([]*domain.Income, error) {
 	var incomes []*domain.Income
-	err := r.conn.WithContext(ctx).Where("user_id = ?", userID).Find(&incomes).Error
+
+	err := r.conn.WithContext(ctx).Model(domain.Income{}).
+		Where("time >= ? and time <= ? and user_id = ?", from, to, userID).
+		Order("time asc").
+		Find(&incomes).Error
 	if err != nil {
 		return nil, err
 	}
+
 	return incomes, nil
 }
 
-func (r *PqsqlRepo) AddIncome(ctx context.Context, amount float64, descrition, category string, userID uint) error {
+func (r *PqsqlRepo) AddIncome(ctx context.Context, time uint64, amount float64, descrition, category string, userID uint) error {
 	income := &domain.Income{
+		Time:        time,
 		Amount:      amount,
 		Description: descrition,
 		Category:    category,
@@ -30,12 +36,13 @@ func (r *PqsqlRepo) AddIncome(ctx context.Context, amount float64, descrition, c
 	return nil
 }
 
-func (r *PqsqlRepo) UpdateIncome(ctx context.Context, id uint, amount float64, description, category string, userID uint) error {
+func (r *PqsqlRepo) UpdateIncome(ctx context.Context, id uint, time uint64, amount float64, description, category string, userID uint) error {
 
 	result := r.conn.WithContext(ctx).
 		Model(&domain.Income{}).
 		Where("ID = ? and user_id = ?", id, userID).
 		Updates(domain.Income{
+			Time:        time,
 			Amount:      amount,
 			Description: description,
 			Category:    category,
@@ -63,7 +70,7 @@ func (r *PqsqlRepo) ReportIncomes(ctx context.Context, from, to string, userID u
 	log.Printf("to: %s", to)
 
 	err := r.conn.WithContext(ctx).Model(domain.Income{}).
-		Where("created_at >= ? and created_at <= ? and user_id = ?", from, to, userID).
+		Where("time >= ? and time <= ? and user_id = ?", from, to, userID).
 		Find(&incomes).Error
 	if err != nil {
 		return nil, err
@@ -72,16 +79,16 @@ func (r *PqsqlRepo) ReportIncomes(ctx context.Context, from, to string, userID u
 	return incomes, nil
 }
 
-func (r *PqsqlRepo) IncomesSummary(ctx context.Context, userID uint) ([]*domain.IncomeSummary, error) {
-	var summary []*domain.IncomeSummary
+func (r *PqsqlRepo) IncomesSummary(ctx context.Context, from, to string, userID uint) ([]domain.IncomeSummary, error) {
+	var summary []domain.IncomeSummary
 
 	err := r.conn.WithContext(ctx).Model(domain.Income{}).
-		Where("user_id = ?", userID).
+		Where("time >= ? and time <= ? and user_id = ?", from, to, userID).
 		Select("category, sum(amount) as amount").
 		Group("category").
 		Scan(&summary).Error
 	if err != nil {
-		return nil, err
+		return summary, err
 	}
 
 	return summary, nil

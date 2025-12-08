@@ -93,11 +93,11 @@ func (r *MemoryRepo) ChangePassword(ctx context.Context, userID uint, password s
 }
 
 // ---------------------------------------------
-func (r *MemoryRepo) ListIncomes(ctx context.Context, userID uint) ([]*domain.Income, error) {
+func (r *MemoryRepo) ListIncomes(ctx context.Context, from, to string, userID uint) ([]*domain.Income, error) {
 	return slices.Collect(maps.Values(r.incomes)), nil
 }
 
-func (r *MemoryRepo) AddIncome(ctx context.Context, amount float64, descrition, category string, userID uint) error {
+func (r *MemoryRepo) AddIncome(ctx context.Context, time uint64, amount float64, descrition, category string, userID uint) error {
 	income := domain.Income{}
 	income.ID = 1
 	income.Amount = amount
@@ -109,7 +109,7 @@ func (r *MemoryRepo) AddIncome(ctx context.Context, amount float64, descrition, 
 	return nil
 }
 
-func (r *MemoryRepo) UpdateIncome(ctx context.Context, id uint, amount float64, descrition, category string, userID uint) error {
+func (r *MemoryRepo) UpdateIncome(ctx context.Context, id uint, time uint64, amount float64, descrition, category string, userID uint) error {
 	r.incomes[id].Amount = amount
 	r.incomes[id].Description = descrition
 	r.incomes[id].Category = category
@@ -121,11 +121,11 @@ func (r *MemoryRepo) DeleteIncome(ctx context.Context, id uint, userID uint) err
 	return nil
 }
 
-func (r *MemoryRepo) ListExpenses(ctx context.Context, userID uint) ([]*domain.Expense, error) {
+func (r *MemoryRepo) ListExpenses(ctx context.Context, from, to string, userID uint) ([]*domain.Expense, error) {
 	return slices.Collect(maps.Values(r.expenses)), nil
 }
 
-func (r *MemoryRepo) AddExpense(ctx context.Context, amount float64, descrition, category string, userID uint) error {
+func (r *MemoryRepo) AddExpense(ctx context.Context, time uint64, amount float64, descrition, category string, userID uint) error {
 	expense := domain.Expense{}
 
 	expense.ID = 1
@@ -137,7 +137,7 @@ func (r *MemoryRepo) AddExpense(ctx context.Context, amount float64, descrition,
 	return nil
 }
 
-func (r *MemoryRepo) UpdateExpense(ctx context.Context, id uint, amount float64, descrition, category string, userID uint) error {
+func (r *MemoryRepo) UpdateExpense(ctx context.Context, id uint, time uint64, amount float64, descrition, category string, userID uint) error {
 	r.expenses[id].Amount = amount
 	r.expenses[id].Description = descrition
 	r.expenses[id].Category = category
@@ -170,14 +170,54 @@ func (r *MemoryRepo) GetUserInfo(ctx context.Context, username string) (*domain.
 	return nil, errors.New(shared.ErrNotFoundUser)
 }
 
-func (r *MemoryRepo) IncomesSummary(ctx context.Context, userID uint) ([]*domain.IncomeSummary, error) {
+func (r *MemoryRepo) IncomesSummary(ctx context.Context, from, to string, userID uint) ([]domain.IncomeSummary, error) {
 	return nil, nil
 }
 
-func (r *MemoryRepo) ExpensesSummary(ctx context.Context, userID uint) ([]*domain.ExpenseSummary, error) {
+func (r *MemoryRepo) ExpensesSummary(ctx context.Context, from, to string, userID uint) ([]*domain.ExpenseSummary, error) {
 	return nil, nil
 }
 
-func (r *MemoryRepo) OverallSummary(ctx context.Context, from, to string, userID uint) ([]*domain.IncomeSummary, error) {
+func (r *MemoryRepo) OverallSummary(ctx context.Context, from, to string, userID uint) (*domain.Summary, error) {
 	return nil, nil
+}
+
+func (r *MemoryRepo) ListCategories(ctx context.Context, t string, userID uint) ([]*domain.Category, error) {
+	return nil, nil
+}
+
+func (r *MemoryRepo) AddCategory(ctx context.Context, _type string, name string, userID uint) error {
+	return nil
+}
+
+func (r *MemoryRepo) UpdateCategory(ctx context.Context, id uint, _type string, name string, userID uint) error {
+	return nil
+}
+
+func (r *MemoryRepo) DeleteCategory(ctx context.Context, id uint, userID uint) error {
+	return nil
+}
+
+func (r *MemoryRepo) ListUpcomingExpenses(ctx context.Context, from, to string, userID uint) ([]*domain.UpcomingExpense, error) {
+	return nil, nil
+}
+
+func (r *MemoryRepo) AddUpcomingExpense(ctx context.Context, time uint64, amount float64, descrition, category string, userID uint) error {
+	return nil
+}
+
+func (r *MemoryRepo) UpdateUpcomingExpense(ctx context.Context, id uint, time uint64, amount float64, descrition, category string, userID uint) error {
+	return nil
+}
+
+func (r *MemoryRepo) DeleteUpcomingExpense(ctx context.Context, id uint, userID uint) error {
+	return nil
+}
+
+func (r *MemoryRepo) UpcomingExpensesSummary(ctx context.Context, from, to string, userID uint) ([]*domain.UpcomingExpenseSummary, error) {
+	return nil, nil
+}
+
+func (r *MemoryRepo) PayUpcomingExpense(ctx context.Context, id uint, userID uint) error {
+	return nil
 }

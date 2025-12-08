@@ -9,27 +9,31 @@ type User struct {
 	Role      string `json:"role"`
 
 	// Relation: one user has many incomes
-	Incomes  []Income  `gorm:"constraint:OnDelete:CASCADE,OnUpdate:CASCADE;" json:"incomes"`
-	Expenses []Expense `gorm:"constraint:OnDelete:CASCADE,OnUpdate:CASCADE;" json:"expenses"`
+	Incomes    []Income   `gorm:"constraint:OnDelete:CASCADE,OnUpdate:CASCADE;" json:"incomes"`
+	Expenses   []Expense  `gorm:"constraint:OnDelete:CASCADE,OnUpdate:CASCADE;" json:"expenses"`
+	Categories []Category `gorm:"constraint:OnDelete:CASCADE,OnUpdate:CASCADE;" json:"categories"`
 }
 
+type Category struct {
+	ID   uint   `gorm:"primaryKey" json:"id"`
+	Name string `gorm:"uniqueIndex:idx_user_name" json:"name"`
+	Type string `json:"type"`
+
+	// Foreign key to User
+	UserID uint `gorm:"uniqueIndex:idx_user_name" json:"user_id"`
+}
+
+// --------------------------------------- Income
 type Income struct {
 	ID          uint    `gorm:"primary_key" json:"id"`
 	CreatedAt   uint64  `json:"created_at"`
+	Time        uint64  `json:"time"`
 	Amount      float64 `json:"amount"`
 	Description string  `json:"description"`
 	Category    string  `json:"category"`
 
-	// Foreign key to User
-	UserID uint `json:"user_id"`
-}
-
-type Expense struct {
-	ID          uint    `gorm:"primary_key" json:"id"`
-	CreatedAt   uint64  `json:"created_at"`
-	Amount      float64 `json:"amount"`
-	Description string  `json:"description"`
-	Category    string  `json:"category"`
+	// CategoryID uint     `json:"category_id"` // foreign key
+	// Category   Category `gorm:"constraint:OnDelete:CASCADE,OnUpdate:CASCADE;"`
 
 	// Foreign key to User
 	UserID uint `json:"user_id"`
@@ -40,12 +44,50 @@ type IncomeSummary struct {
 	Amount   float64 `json:"amount"`
 }
 
+// --------------------------------------- Expense
+type Expense struct {
+	ID          uint    `gorm:"primary_key" json:"id"`
+	CreatedAt   uint64  `json:"created_at"`
+	Time        uint64  `json:"time"`
+	Amount      float64 `json:"amount"`
+	Description string  `json:"description"`
+	Category    string  `json:"category"`
+
+	// Foreign key to User
+	UserID uint `json:"user_id"`
+}
+
 type ExpenseSummary struct {
 	Category string  `json:"category"`
 	Amount   float64 `json:"amount"`
 }
 
-type FinancialSummary struct {
-	Incomes float64
-	Expense float64
+// type FinancialSummary struct {
+// 	Incomes float64
+// 	Expense float64
+// }
+
+// -------------------------------------------------- Summary
+type Summary struct {
+	Incomes float64 `json:"incomes"`
+	Expense float64 `json:"expenses"`
+}
+
+// -------------------------------------------------- Upcoming expenses
+
+type UpcomingExpense struct {
+	ID          uint    `gorm:"primary_key" json:"id"`
+	CreatedAt   uint64  `json:"created_at"`
+	Time        uint64  `json:"time"`
+	Amount      float64 `json:"amount"`
+	Description string  `json:"description"`
+	Category    string  `json:"category"`
+
+	// Foreign key to User
+	UserID uint `json:"user_id"`
+}
+
+type UpcomingExpenseSummary struct {
+	Category string  `json:"category"`
+	Amount   float64 `json:"amount"`
 }

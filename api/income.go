@@ -19,6 +19,7 @@ func (h *Handler) AddIncome(c *gin.Context) {
 	defer cancel()
 
 	var income struct {
+		Time        uint64
 		Amount      float64
 		Description string
 		Category    string
@@ -31,11 +32,16 @@ func (h *Handler) AddIncome(c *gin.Context) {
 
 	user := h.GetUserByName(c)
 
-	err = h.Repo.Repo.AddIncome(ctx, income.Amount, income.Description, income.Category, user.ID)
+	err = h.Repo.Repo.AddIncome(ctx, income.Time, income.Amount, income.Description, income.Category, user.ID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{shared.ErrKeyword: shared.ErrAddingIncome})
 		return
 	}
+
+	// add category if it is new
+	// keep categories uniq for (name,userid) -> then insert in db
+	_ = h.Repo.Repo.AddCategory(ctx, "income", income.Category, user.ID)
+
 	c.JSON(http.StatusOK, gin.H{shared.OkKeyword: shared.OkAddingIncome})
 }
 
@@ -45,6 +51,7 @@ func (h *Handler) UpdateIncome(c *gin.Context) {
 
 	var income struct {
 		ID          uint
+		Time        uint64
 		Amount      float64
 		Description string
 		Category    string
@@ -58,7 +65,7 @@ func (h *Handler) UpdateIncome(c *gin.Context) {
 
 	user := h.GetUserByName(c)
 
-	err = h.Repo.Repo.UpdateIncome(ctx, income.ID, income.Amount, income.Description, income.Category, user.ID)
+	err = h.Repo.Repo.UpdateIncome(ctx, income.ID, income.Time, income.Amount, income.Description, income.Category, user.ID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{shared.ErrKeyword: shared.ErrAddingIncome})
 		return
@@ -88,9 +95,12 @@ func (h *Handler) Incomes(c *gin.Context) {
 	ctx, cancel := context.WithTimeout(c, 100*time.Millisecond)
 	defer cancel()
 
+	from := c.Query("from")
+	to := c.Query("to")
+
 	user := h.GetUserByName(c)
 
-	incomes, err := h.Repo.Repo.ListIncomes(ctx, user.ID)
+	incomes, err := h.Repo.Repo.ListIncomes(ctx, from, to, user.ID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{shared.ErrKeyword: shared.ErrListingIncomes})
 		return
@@ -113,20 +123,6 @@ func (h *Handler) ReportIncomes(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, shared.ErrListingIncomes)
 		return
 	}
-
-	// var newIncomes []CommonTypeWithStringTime
-
-	// for i, _ := range incomes {
-	// 	ni := CommonTypeWithStringTime{
-	// 		ID:          incomes[i].ID,
-	// 		Amount:      incomes[i].Amount,
-	// 		CreatedAt:   shared.UnixTimeToRFC339(incomes[i].CreatedAt),
-	// 		Description: incomes[i].Description,
-	// 		Category:    incomes[i].Category,
-	// 	}
-
-	// 	newIncomes = append(newIncomes, ni)
-	// }
 
 	c.JSON(http.StatusOK, incomes)
 }
@@ -190,9 +186,12 @@ func (h *Handler) IncomeSummary(c *gin.Context) {
 	ctx, cancel := context.WithTimeout(c, 5*time.Second)
 	defer cancel()
 
+	from := c.Query("from")
+	to := c.Query("to")
+
 	user := h.GetUserByName(c)
 
-	res, err := h.Repo.Repo.IncomesSummary(ctx, user.ID)
+	res, err := h.Repo.Repo.IncomesSummary(ctx, from, to, user.ID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{shared.ErrKeyword: shared.ErrInternalError})
 		return

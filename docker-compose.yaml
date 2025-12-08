@@ -1,4 +1,22 @@
 services:
+  # porject:
+  #   build: .
+  #   container_name: full-stack-web
+  #   restart: unless-stopped
+  #   ports:
+  #     - "8000:80"
+  #   environment:
+  #     - SSL_MODE=disable
+  #     - DB_PORT=5432
+  #     - DB_HOST=localhost
+  #     - DB_NAME_WEB=postgres
+  #     - DB_USER=postgres
+  #     - DB_PASS=postgres
+  #   volumes:
+  #     - shared_volume:/var/log/full-stack
+  #   networks:
+  #     - full-stack-net
+
   postgres:
     image: postgres:17
     container_name: full-stack-db

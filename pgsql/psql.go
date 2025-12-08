@@ -21,6 +21,8 @@ func NewPgsqlRepo(dsn string) (*PqsqlRepo, error) {
 		domain.User{},
 		domain.Income{},
 		domain.Expense{},
+		domain.Category{},
+		domain.UpcomingExpense{},
 	)
 
 	return &PqsqlRepo{
