@@ -6,19 +6,19 @@ import {
   Box,
   Paper,
   Alert,
-  Avatar,
   Container,
   Link
 } from "@mui/material";
-import { PersonAddOutlined, Person, Email, Lock } from "@mui/icons-material";
+import { Person, Email, Lock } from "@mui/icons-material";
 import { Link as RouterLink } from "react-router-dom";
+import { apiFetch } from "./utils/api";
 
 const Signup = () => {
-  const baseUrl = sessionStorage.getItem("baseUrl");
 
   const [form, setForm] = useState({
     username: "",
     password: "",
+    password_confirmation:"",
     email: "",
   });
 
@@ -38,59 +38,56 @@ const Signup = () => {
     setMessage("");
     setLoading(true);
 
-    try {
-      const response = await fetch(`${baseUrl}/api/v1/signup`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(form),
-      });
-
-      const signupData = await response.json();
-
-      if (response.ok) {
-        setSuccess(true);
-        setMessage("Account created successfully! Signing you in...");
-
-        // Automatically log in the user after successful signup
-        try {
-          const loginResponse = await fetch(`${baseUrl}/api/v1/login`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              username: form.username,
-              password: form.password,
-            }),
-          });
-
-          const loginData = await loginResponse.json();
-
-          if (loginResponse.ok) {
-            const token = loginData.token;
-            sessionStorage.setItem("token", token);
-
-            // Redirect to Dashboard (the App.jsx routing will handle this)
-            window.location.href = "/";
-          } else {
-            // If login fails, show success message and let user manually login
+    if (form.password != form.password_confirmation ) {
+        setMessage("Passwords do not match!");
+        setLoading(false);
+    }else{
+      try {
+        const response = await apiFetch('/api/v1/signup', {
+          method: "POST",
+          body: JSON.stringify(form),
+        });
+  
+        const signupData = await response.json();
+  
+        if (response.ok) {
+          setSuccess(true);
+          setMessage("Account created successfully! Signing you in...");
+  
+          // Automatically log in the user after successful signup
+          try {
+            const loginResponse = await apiFetch('/api/v1/login', {
+              method: "POST",
+              body: JSON.stringify({
+                username: form.username,
+                password: form.password,
+              }),
+            });
+  
+            const loginData = await loginResponse.json();
+  
+            if (loginResponse.ok) {
+              const token = loginData.token;
+              sessionStorage.setItem("token", token);
+              window.location.href = "/";
+            } else {
+              setMessage("Account created successfully! Please sign in manually.");
+            }
+          } catch (loginError) {
+            console.error("Auto-login error:", loginError);
             setMessage("Account created successfully! Please sign in manually.");
           }
-        } catch (loginError) {
-          console.error("Auto-login error:", loginError);
-          setMessage("Account created successfully! Please sign in manually.");
+        } else {
+          setMessage(signupData.error || "Signup failed. Please try again.");
         }
-      } else {
-        setMessage(signupData.error || "Signup failed. Please try again.");
+      } catch (error) {
+        console.error("Error:", error);
+        setMessage("Network error. Please try again.");
+      } finally {
+        setLoading(false);
       }
-    } catch (error) {
-      console.error("Error:", error);
-      setMessage("Network error. Please try again.");
-    } finally {
-      setLoading(false);
     }
+   
   };
 
   return (
@@ -119,17 +116,6 @@ const Signup = () => {
             boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
           }}
         >
-          <Avatar
-            sx={{
-              mx: 'auto',
-              mb: 2,
-              bgcolor: 'secondary.main',
-              width: 60,
-              height: 60,
-            }}
-          >
-            <PersonAddOutlined sx={{ fontSize: 30 }} />
-          </Avatar>
 
           <Typography
             variant="h4"
@@ -141,17 +127,7 @@ const Signup = () => {
               mb: 3,
             }}
           >
-            Create Account
-          </Typography>
-
-          <Typography
-            variant="body1"
-            sx={{
-              color: 'text.secondary',
-              mb: 4,
-            }}
-          >
-            Join us today and get started
+            Finance Management
           </Typography>
 
           <Box
@@ -207,6 +183,24 @@ const Signup = () => {
               variant="outlined"
               name="password"
               value={form.password}
+              onChange={handleChange}
+              required
+              InputProps={{
+                startAdornment: <Lock sx={{ color: 'action.active', mr: 1 }} />,
+              }}
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  borderRadius: 2,
+                },
+              }}
+            />
+            <TextField
+              fullWidth
+              label="Password Confirmation"
+              type="password"
+              variant="outlined"
+              name="password_confirmation"
+              value={form.password_confirmation}
               onChange={handleChange}
               required
               InputProps={{

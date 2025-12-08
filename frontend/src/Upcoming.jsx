@@ -21,7 +21,7 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { apiFetch, convertUnixtoRFC3339 } from "./utils/api";
 import { PieChart } from '@mui/x-charts/PieChart';
 
-export default function Expenses() {
+export default function Upcoming() {
 
   const [loading, setLoading] = useState(true);
   const [rows, setRows] = useState([]);
@@ -34,6 +34,7 @@ export default function Expenses() {
     amount: "",
     description: "",
     category: "",
+    repeat:"",
   });
 
   const [snackbarMessage, setSnackbarMessage] = useState("");
@@ -44,8 +45,8 @@ export default function Expenses() {
   const [isAddingNewCategory, setIsAddingNewCategory] = useState(false);
 
   // Date range filters
-  const [from, setFrom] = useState(dayjs().startOf("month"));
-  const [to, setTo] = useState(dayjs());
+  const [from, setFrom] = useState(dayjs().startOf('day'));
+  const [to, setTo] = useState(dayjs().endOf('month'));
 
   // Summary data
   const [totalAmount, setTotalAmount] = useState(0);
@@ -55,7 +56,7 @@ export default function Expenses() {
     setIsEditing(false);
     setEditingRow(null);
     setIsAddingNewCategory(false); // Reset category adding state
-    setFormData({ date: dayjs(), amount: "", description: "", category: "" });
+    setFormData({ date: dayjs(), amount: 100, description: "", category: "", repeat: "Once" });
     fetchCategories(); // Fetch categories when opening dialog
     setOpen(true);
   };
@@ -110,7 +111,7 @@ export default function Expenses() {
   {
     field: "actions",
     headerName: "Actions",
-    width: 250,
+    width: 280,
     renderHeader: () => (
       <strong>
         {'Actions'}
@@ -135,16 +136,25 @@ export default function Expenses() {
         >
           Delete
         </Button>
+
+        <Button
+          variant="contained"
+          color="success"
+          onClick={() => handlePay(params.row.id)}
+          sx={{ textTransform: "none" }}
+        >
+          Pay
+        </Button>
       </div>
     ),
     },
   ];
 
-  const fetchExpenses = async () => {
+  const fetchUpcomingExpenses = async () => {
     try {
       setLoading(true);
 
-      const res = await apiFetch(`/api/v1/expenses/list?from=${from.unix()}&to=${to.unix()}`);
+      const res = await apiFetch(`/api/v1/upcoming_expenses/list?from=${from.unix()}&to=${to.unix()}`);
 
       if (!res.ok) throw new Error("Failed to fetch expenses");
 
@@ -182,7 +192,7 @@ export default function Expenses() {
   };
 
   const handleGetReport = () => {
-    fetchExpenses(from.unix(), to.unix());
+    fetchUpcomingExpenses(from.unix(), to.unix());
   };
 
   const handleSubmit = async() => {
@@ -199,11 +209,12 @@ export default function Expenses() {
       amount: Number(formData.amount),
       description: formData.description,
       category: formData.category,
+      repeat: formData.repeat,
     };
       try {
       // const payload = { ...row, amount: parseInt(row.amount, 10) };
 
-      const res = await apiFetch('/api/v1/expenses/add', {
+      const res = await apiFetch('/api/v1/upcoming_expenses/add', {
         method: "POST",
         body: JSON.stringify(newRecord), // Send entire row info
       });
@@ -219,10 +230,10 @@ export default function Expenses() {
       setShowToast(true);
 
       // Refresh rows
-      fetchExpenses(from.unix(), to.unix());
+      fetchUpcomingExpenses(from.unix(), to.unix());
 
       // Close popup and reset
-      setFormData({ date: dayjs().startOf('D'), amount: "", description: "", category: "" });
+      setFormData({ date: dayjs().startOf('D'), amount: "", description: "", category: "", repeat:"" });
       handleClose();
 
     } catch (err) {
@@ -234,7 +245,7 @@ export default function Expenses() {
   const handleDelete = async(id) => {
       try {
    
-      const res = await apiFetch(`/api/v1/expenses/delete?id=${id}`, {
+      const res = await apiFetch(`/api/v1/upcoming_expenses/delete?id=${id}`, {
         method: "DELETE",
       });
 
@@ -249,13 +260,40 @@ export default function Expenses() {
       setShowToast(true);
 
       // Refresh rows
-      fetchExpenses(from.unix(), to.unix());
+      fetchUpcomingExpenses(from.unix(), to.unix());
       
     } catch (err) {
       setSnackbarMessage(err.messaage);
       setShowSnackbar(true);
     }
   };
+
+  const handlePay = async(id) => {
+    try {
+ 
+    const res = await apiFetch(`/api/v1/upcoming_expenses/pay?id=${id}`, {
+      method: "PUT",
+    });
+
+    const data = await res.json();
+    
+    if (data.error) {
+      setSnackbarMessage(data.error);
+      setShowSnackbar(true);
+    }
+    
+    setSnackbarMessage(data.ok || "Row moved successfully!");
+    setShowToast(true);
+
+    // Refresh rows
+    fetchUpcomingExpenses(from.unix(), to.unix());
+    
+  } catch (err) {
+    setSnackbarMessage(err.messaage);
+    setShowSnackbar(true);
+  }
+};
+
 
   const handleUpdateClick = (row) => {
     setIsEditing(true);
@@ -266,6 +304,7 @@ export default function Expenses() {
       amount: row.amount.toString(),
       description: row.description,
       category: row.category,
+      repeat: row.repeat,
     });
     setOpen(true);
   };
@@ -278,9 +317,10 @@ export default function Expenses() {
         amount: Number(formData.amount),
         description: formData.description,
         category: formData.category,
+        repeat: formData.repeat,
       };
 
-      const res = await apiFetch('/api/v1/expenses/update', {
+      const res = await apiFetch('/api/v1/upcoming_expenses/update', {
         method: "POST",
         body: JSON.stringify(payload),
       });
@@ -294,9 +334,10 @@ export default function Expenses() {
         setSnackbarMessage(data.ok || "Row updated successfully!");
         setShowToast(true);
 
-        
-        fetchExpenses(from.unix(), to.unix());
+        // Refresh rows
+        fetchUpcomingExpenses(from.unix(), to.unix());
 
+        // Close popup and reset
         handleClose();
       }
 
@@ -321,7 +362,7 @@ export default function Expenses() {
   }, [rows]);
 
   useEffect(() => {
-    fetchExpenses(from.unix(), to.unix());
+    fetchUpcomingExpenses(from.unix(), to.unix());
   }, []);
 
   return (
@@ -338,13 +379,13 @@ export default function Expenses() {
       }}
     >
 
-      <div style={{ padding:"20px", width:"100px"}}>
-        <h2 style={{ color: "white", padding: 0, margin: 0 }}>Expenses</h2>
+      <div style={{ padding:"20px", width:"250px"}}>
+        <h2 style={{ color: "white", padding: 0, margin: 0 }}>Upcoming Expenses</h2>
       </div>
 
       {/* POPUP FORM */}
       <Dialog open={open} onClose={handleClose}>
-        <DialogTitle>{isEditing ? "Update expense record" : "Add a new expense"}</DialogTitle>
+        <DialogTitle>{isEditing ? "Update expense record" : "Add a new upcoming expense"}</DialogTitle>
         <DialogContent sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
 
           <FormControl fullWidth sx={{ mt: 1, mb: 1 }}>
@@ -353,7 +394,7 @@ export default function Expenses() {
                 label="Date"
                 value={formData.date}
                 onChange={(newValue) => setFormData({ ...formData, date: newValue })}
-                maxDate={dayjs()}
+                minDate={dayjs()}
                 sx={{
                   '& .MuiInputLabel-root': {
                     backgroundColor: 'white',
@@ -428,7 +469,19 @@ export default function Expenses() {
               ← Back to category list
             </Button>
           )}
-        </DialogContent>
+          <FormControl fullWidth>
+            <InputLabel >Repeat</InputLabel>
+            <Select
+              label="Repeat"
+              name="repeat"
+              value={formData.repeat}
+              onChange={(e) => setFormData({ ...formData, repeat: e.target.value })}
+            >
+              <MenuItem value={"once"}>Once</MenuItem>
+              <MenuItem value={"monthly"}>Monthly</MenuItem>
+            </Select>
+          </FormControl>
+          </DialogContent>
 
         <DialogActions>
           <Button onClick={handleClose} sx={{ textTransform: "none" }}>Cancel</Button>
@@ -446,6 +499,7 @@ export default function Expenses() {
                       label="from"
                       value={from}
                       onChange={(newValue) => setFrom(newValue)}
+                      minDate={dayjs()}
                       sx={{
                           backgroundColor: "white",
                           borderRadius: "8px",
@@ -466,7 +520,7 @@ export default function Expenses() {
                       label="to"
                       value={to}
                       onChange={(newValue) => setTo(newValue)}
-                      maxDate={dayjs()}
+                      minDate={dayjs()}
                       sx={{
                           backgroundColor: "white",
                           borderRadius: "8px",
@@ -514,7 +568,7 @@ export default function Expenses() {
               justifyContent: "center",
               alignItems: "center"
           }}>
-              <h3 style={{ margin: "0 0 15px 0", color: "#1976d2", textAlign: "center" }}>Total Expenses</h3>
+              <h3 style={{ margin: "0 0 15px 0", color: "#1976d2", textAlign: "center" }}>Total Upcoming Expenses</h3>
               <div style={{
                   fontSize: "2rem",
                   fontWeight: "bold",
@@ -532,7 +586,7 @@ export default function Expenses() {
               boxShadow: "0 4px 20px rgba(0, 0, 0, 0.1)",
               padding: "20px"
           }}>
-              <h3 style={{ margin: "0 0 15px 0", color: "#1976d2" }}>Expenses by category</h3>
+              <h3 style={{ margin: "0 0 15px 0", color: "#1976d2" }}>Upcoming expenses by category</h3>
               <div style={{
                   display: "flex",
                   justifyContent: "center",
@@ -546,7 +600,7 @@ export default function Expenses() {
                           fontStyle: "italic",
                           padding: "20px"
                       }}>
-                          No expenses recorded yet
+                          No upcoming expenses recorded yet
                       </div>
                   ) : (
                       <div style={{ display: "flex", alignItems: "center", gap: "40px" }}>
@@ -619,7 +673,7 @@ export default function Expenses() {
       {/* NEW EXPENSE BUTTON */}
       <div style={{ width: "1160px", padding:"20px", margin: "20px", backgroundColor: "rgba(255, 255, 255, 0.95)", borderRadius: "12px", boxShadow: "0 4px 20px rgba(0, 0, 0, 0.1)"}}>
         <Button variant="contained" onClick={handleOpen} sx={{ textTransform: "none" }}>
-          New Expense
+          New Upcoming Expense
         </Button>
       </div>
 

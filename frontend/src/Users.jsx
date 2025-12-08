@@ -8,12 +8,16 @@ import {
   DialogContent,
   DialogTitle,
   TextField,
+  Box,
 } from "@mui/material";
+import { FormControl, InputLabel, Select, MenuItem } from "@mui/material";
+import { apiFetch } from "./utils/api";
 
 export default function Users() {
   const baseUrl = sessionStorage.getItem("baseUrl");
   const token = sessionStorage.getItem("token");
 
+  const [role, setRole] = useState("user");
   const [loading, setLoading] = useState(true);
   const [rows, setRows] = useState([]);
 
@@ -22,7 +26,7 @@ export default function Users() {
     username: "",
     password: "",
     email: "",
-    role:"",
+    role:"user",
   });
 
   const [snackbarMessage, setSnackbarMessage] = useState("");
@@ -38,20 +42,57 @@ export default function Users() {
   };
 
   const columns = [
-    { field: "displayId", headerName: "ID", width: 70, align: "left", headerAlign: "left" },
-    { field: "username", headerName: "Username", width: 100, editable: true, align: "left", headerAlign: "left" },
-    { field: "email", headerName: "Email", width: 300, editable: true, align: "left", headerAlign: "left" },
-    { field: "role", headerName: "Role", width: 140, editable: true, align: "left", headerAlign: "left" },
+    { field: "displayId", headerName: "ID", width: 70, align: "left", headerAlign: "left",
+      renderHeader: () => (
+        <strong>
+          {'ID'}
+        </strong>
+        )
+     },
+    { field: "username", headerName: "Username", width: 100, editable: true, align: "left", headerAlign: "left",
+      renderHeader: () => (
+        <strong>
+          {'Username'}
+        </strong>
+        )
+     },
+    { field: "password", headerName: "Password", width: 200, editable: true, align: "left", headerAlign: "left",
+      renderHeader: () => (
+        <strong>
+          {'Password'}
+        </strong>
+        )
+     },
+    { field: "email", headerName: "Email", width: 300, editable: true, align: "left", headerAlign: "left",
+      renderHeader: () => (
+        <strong>
+          {'Email'}
+        </strong>
+        )
+     },
+    { field: "role", headerName: "Role", width: 140, editable: true, align: "left", headerAlign: "left",
+      renderHeader: () => (
+        <strong>
+          {'Role'}
+        </strong>
+        )
+     },
   {
     field: "actions",
     headerName: "Actions",
-    width: 250,
+    width: 390,
+    renderHeader: () => (
+      <strong>
+        {'Actions'}
+      </strong>
+      ),
     renderCell: (params) => (
       <div style={{ display: "flex", gap: "10px" }}>
         <Button
           variant="contained"
           color="primary"
           onClick={() => handleUpdate(params.row)}
+          sx={{ textTransform: "none" }}
         >
           Update
         </Button>
@@ -60,9 +101,20 @@ export default function Users() {
           variant="contained"
           color="error"
           onClick={() => handleDelete(params.row.id)}
+          sx={{ textTransform: "none" }}
         >
           Delete
         </Button>
+
+        <Button
+          variant="contained"
+          color="warning"
+          onClick={() => handleChangePassword(params.row)}
+          sx={{ textTransform: "none" }}
+        >
+          Change Password
+        </Button>
+
       </div>
     ),
     },
@@ -72,11 +124,7 @@ export default function Users() {
     try {
       setLoading(true);
 
-      const res = await fetch(`${baseUrl}/api/v1/users/list`, {
-        headers: {
-          "Authorization": `Bearer ${token}`
-        }
-      });
+      const res = await apiFetch('/api/v1/users/list');
 
       if (!res.ok) throw new Error("Failed to fetch users");
 
@@ -102,18 +150,17 @@ export default function Users() {
     const newRecord = {
       username: formData.username,
       password: formData.password,
-      role: formData.role,
-      email: formData.email,  
+      role: role, // Use the role state instead of formData.role
+      email: formData.email,
     };
+
+
+    console.log("newRecord:", newRecord);
       try {
       // const payload = { ...row, amount: parseInt(row.amount, 10) };
 
       const res = await fetch(`${baseUrl}/api/v1/users/add`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
         body: JSON.stringify(newRecord), // Send entire row info
       });
 
@@ -124,14 +171,17 @@ export default function Users() {
         setShowToast(true);
       }
       
-      setSnackbarMessage(data.ok || "Row added successfully!");
-      setShowToast(true);
+      if (data.ok) {
+        setSnackbarMessage(data.ok || "Row added successfully!");
+        setShowToast(true);
+      }
 
       // Refresh rows
       fetchUsers();
 
       // Close popup and reset
-      setFormData({ amount: "", description: "", category: "" });
+      setFormData({ username: "", password: "", email: "" });
+      setRole("users"); // Reset role to default value
       handleClose();
       
     } catch (err) {
@@ -145,11 +195,6 @@ export default function Users() {
    
       const res = await fetch(`${baseUrl}/api/v1/users/delete?id=${id}`, {
         method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        // body: JSON.stringify(payload), // Send entire row info
       });
 
       const data = await res.json();
@@ -175,10 +220,6 @@ export default function Users() {
       try {
       const res = await fetch(`${baseUrl}/api/v1/users/update`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
         body: JSON.stringify(row), // Send entire row info
       });
 
@@ -201,16 +242,66 @@ export default function Users() {
     }
   };
 
+    const handleChangePassword = async(row) => {
+      try {
+      
+        // console.log("row:", row);
+
+      const credentials = {
+        user_id : row.id,
+        password: row.password
+      };
+
+      console.log("credentials:", credentials);
+
+      const res = await fetch(`${baseUrl}/api/v1/users/change_password`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(credentials),
+      });
+
+      const data = await res.json();
+      
+      if (data.error) {
+        setSnackbarMessage(data.error);
+        setShowSnackbar(true);
+      }
+      
+      setSnackbarMessage(data.ok || "Password chanaged successfully!");
+      setShowToast(true);
+
+      // Refresh rows
+      fetchUsers();
+      
+    } catch (err) {
+      setSnackbarMessage(err.messaage);
+      setShowSnackbar(true);
+    }
+  };
+
   useEffect(() => {
     fetchUsers();
   }, []);
 
   return (
-    <div style={{ height: 600, width: "100%" }}>
+    <Box
+      sx={{
+        minHeight: '100vh',
+        backgroundImage: 'url(/back.png)',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
+        height: 600,
+        width: "100%",
+      }}
+    >
 
       <div style={{ padding:"20px", width:"200px"}}>
-        <Button variant="contained" onClick={handleOpen}>
-          Add a New User
+        <Button variant="contained" onClick={handleOpen} sx={{ textTransform: "none" }}>
+          New User
         </Button>
       </div>
 
@@ -239,13 +330,26 @@ export default function Users() {
             onChange={handleChange}
             fullWidth
           />
-          <TextField
+          {/* <TextField
             label="Role"
             name="role"
             value={formData.role}
             onChange={handleChange}
             fullWidth
-          />
+          /> */}
+          <FormControl fullWidth>
+                <InputLabel>Role</InputLabel>
+                <Select
+                    value={role}
+                    label="Role"
+                    onChange={(e) => setRole(e.target.value)}
+                >
+                    <MenuItem value="admin">Admin</MenuItem>
+                    <MenuItem value="user">User</MenuItem>
+                </Select>
+            </FormControl>
+
+
         </DialogContent>
 
         <DialogActions>
@@ -257,7 +361,7 @@ export default function Users() {
       </Dialog>
 
 
-    <div style={{ width:"1000px", padding:"20px"}}>
+    <div style={{ width:"1200px", padding:"20px"}}>
           <DataGrid
             rows={rows}
             columns={columns}
@@ -268,7 +372,7 @@ export default function Users() {
           />
     </div>
 
-
+ 
             {/* Snackbar Notification */}
       <Snackbar
         open={showToast}
@@ -278,6 +382,6 @@ export default function Users() {
         anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
       />
 
-    </div>
+    </Box>
   );
 }

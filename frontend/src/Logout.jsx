@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { apiFetch } from "./utils/api";
 
 const Logout = () => {
   const navigate = useNavigate();
@@ -9,12 +10,7 @@ const Logout = () => {
 
   const sendLogoutRequest = async () => {
     try {
-      const res = await fetch(`${baseUrl}/api/v1/logout`, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const res = await apiFetch('/api/v1/logout');
 
       const data = await res.json();
       
@@ -25,14 +21,16 @@ const Logout = () => {
 
       if (data.ok) {
         // Clear session storage
-        sessionStorage.removeItem("token");
-        sessionStorage.removeItem("baseUrl");
+        // sessionStorage.removeItem("token");
+        // sessionStorage.removeItem("baseUrl");
 
         // Or clear ALL session storage:
         // sessionStorage.clear();
+        // setSnackbarMessage(data.ok);
+        // setShowToast(true);
 
         // Redirect to login page
-        navigate("/login");
+        // navigate("/login");
       }
     } catch (err) {
       setSnackbarMessage(err.messaage);
@@ -43,6 +41,9 @@ const Logout = () => {
 
   useEffect(() => {
     sendLogoutRequest();
+
+    sessionStorage.clear();
+
     // Redirect to login page
     navigate("/login");
   }, []);

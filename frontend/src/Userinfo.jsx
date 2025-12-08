@@ -12,6 +12,7 @@ import {
   Snackbar,
 } from "@mui/material";
 import { Person as PersonIcon, Lock as LockIcon, Email as EmailIcon, Badge as BadgeIcon } from "@mui/icons-material";
+import { apiFetch } from "./utils/api";
 
 export default function Userinfo() {
   const baseUrl = sessionStorage.getItem("baseUrl");
@@ -45,13 +46,7 @@ export default function Userinfo() {
       }
 
       try {
-        const response = await fetch(`${baseUrl}/api/v1/userinfo`, {
-          method: "GET",
-          headers: {
-            "Authorization": `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        });
+        const response = await apiFetch('/api/v1/userinfo');
 
         if (response.ok) {
           const data = await response.json();
@@ -113,12 +108,8 @@ export default function Userinfo() {
     setLoading(true);
 
     try {
-      const response = await fetch(`${baseUrl}/api/v1/change_password`, {
+      const response = await apiFetch('/api/v1/change_password', {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
         body: JSON.stringify({
           current_password: passwordForm.currentPassword,
           new_password: passwordForm.newPassword,
@@ -161,6 +152,8 @@ export default function Userinfo() {
         height: 600,
         width: "100%",
         padding: "20px",
+        // height: "100%",
+        // overflowY: "auto",
       }}
     >
       <Typography

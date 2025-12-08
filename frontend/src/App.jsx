@@ -5,9 +5,10 @@ import Dashboard from "./Dashboard"
 import { Routes, Route, useLocation  } from 'react-router-dom';
 import Incomes from "./Incomes";
 import Expenses from "./Expenses";
+import Category from "./Category";
+import Upcoming from "./Upcoming";
 import Login from './Login';
 import Logout from './Logout';
-import Report from './Report';
 import Users from './Users';
 import Signup from './Signup';
 import Userinfo from './Userinfo';
@@ -30,8 +31,18 @@ function App() {
     // Allow access to login and signup pages even without token
     const publicPaths = ["/login", "/signup"];
 
+    // If no token and trying to access protected route, redirect to login
     if (!token && !publicPaths.includes(currentPath)) {
-      navigate("/login"); // redirect to login only for protected routes
+      console.log("No token found, redirecting to login from:", currentPath);
+      navigate("/login", { replace: true });
+      return;
+    }
+
+    // If user has token and is on login page, redirect to dashboard
+    if (token && currentPath === "/login") {
+      console.log("Token found, redirecting to dashboard from login");
+      navigate("/", { replace: true });
+      return;
     }
   }, [navigate, location.pathname]);
 
@@ -45,12 +56,15 @@ function App() {
         <Route path="/" element={<Dashboard />} />
         <Route path="/incomes" element={<Incomes />} />
         <Route path="/expenses" element={<Expenses />} />
+        <Route path="/categories" element={<Category />} />
+        <Route path="/upcoming" element={<Upcoming />} />
         <Route path="/login" element={<Login />} />
         <Route path="/logout" element={<Logout />} />
-        <Route path="/report" element={<Report />} />
         <Route path="/userinfo" element={<Userinfo />} />
         <Route path="/users" element={<Users />} />
         <Route path="/signup" element={<Signup />} />
+        {/* Catch-all route for unknown paths - redirect to login */}
+        <Route path="*" element={<Login />} />
       </Routes>
       </div>
     </div>
