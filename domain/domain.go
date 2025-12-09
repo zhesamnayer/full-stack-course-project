@@ -9,9 +9,10 @@ type User struct {
 	Role      string `json:"role"`
 
 	// Relation: one user has many incomes
-	Incomes    []Income   `gorm:"constraint:OnDelete:CASCADE,OnUpdate:CASCADE;" json:"incomes"`
-	Expenses   []Expense  `gorm:"constraint:OnDelete:CASCADE,OnUpdate:CASCADE;" json:"expenses"`
-	Categories []Category `gorm:"constraint:OnDelete:CASCADE,OnUpdate:CASCADE;" json:"categories"`
+	Incomes          []Income          `gorm:"constraint:OnDelete:CASCADE,OnUpdate:CASCADE;" json:"incomes"`
+	Expenses         []Expense         `gorm:"constraint:OnDelete:CASCADE,OnUpdate:CASCADE;" json:"expenses"`
+	Categories       []Category        `gorm:"constraint:OnDelete:CASCADE,OnUpdate:CASCADE;" json:"categories"`
+	UpcomingExpenses []UpcomingExpense `gorm:"constraint:OnDelete:CASCADE,OnUpdate:CASCADE;" json:"upcoming_expenses"`
 }
 
 type Category struct {
