@@ -19,7 +19,7 @@ export default function Dashboard() {
 
   useEffect(() => {
     fetchSummary(from);
-    fetchTodayInvoices(from);
+    fetchTodayInvoices();
   }, []);
 
   const fetchSummary = async (fromDate) => {
@@ -47,10 +47,11 @@ export default function Dashboard() {
     }
   };
 
-  const fetchTodayInvoices = async (fromDate) => {
+  const fetchTodayInvoices = async () => {
 
-    const start = fromDate.startOf("month").unix();
-    const end = fromDate.endOf("month").unix();
+    const fromDate = dayjs();
+    const start = fromDate.startOf("day").unix();
+    const end = fromDate.endOf("day").unix();
 
     try {
 
@@ -157,7 +158,7 @@ export default function Dashboard() {
                 </div>
               </div>
 
-            {/* Total Today Invoices Box ?!!! */}
+            {/* Total Today Invoices Box */}
             <div style={{
                 width: "250px",
                 backgroundColor:       totalTodayInvoices === 0
@@ -214,8 +215,6 @@ export default function Dashboard() {
                   Expenses Summary
                 </Typography>
               </div>
-
-            
 
             </div>
 
